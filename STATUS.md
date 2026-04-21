@@ -22,7 +22,9 @@ Last session: Today
 - Added `.env.example` (template for API keys)
 - Upgraded `README.md` (project description, tech stack, philosophy)
 - Created this `STATUS.md`
-
+- Created IDEAS_PARKING.md (with first test entry)
+- Set up VS Code as daily workspace
+- Verified clean working tree (Lesson 1 closed)
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -36,7 +38,7 @@ Last session: Today
 ## What is NOT done yet
 
 ### Remaining in Lesson 1
-- Create `IDEAS_PARKING.md` (the Ironman brain release valve)
+-
 - Final foundation commit + verify on GitHub
 
 ### Remaining in Lessons 2+
