@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────
+# .gitignore — GadiW project
+# Files and folders git should NEVER track
+# ─────────────────────────────────────────
+
+# Environment / secrets (NEVER commit API keys)
+.env
+.env.local
+.env.*.local
+*.key
+secrets/
+
+# Node.js dependencies (can be rebuilt from package.json)
+node_modules/
+package-lock.json.backup
+
+# Python virtual environments
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor / IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS junk files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Build outputs (can be regenerated)
+dist/
+build/
+*.log
+
+# Temporary work / backups
+tmp/
+temp/
+*.bak
+*_backup.*
+*_old.*
+
+# Uploaded files that should not be versioned
+uploads/private/
+test_audio/
