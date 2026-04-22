@@ -6,8 +6,7 @@
 
 ## Current phase
 
-**LESSON 1** — Foundation Day (project scaffolding, no app code yet)
-
+**LESSON 2** — Architecture Day COMPLETE. Ready for Lesson 3 (Vite setup + project skeleton).
 ---
 
 ## Where we are right now
@@ -25,6 +24,9 @@ Last session: Today
 - Created IDEAS_PARKING.md (with first test entry)
 - Set up VS Code as daily workspace
 - Verified clean working tree (Lesson 1 closed)
+- 22/04/2026 — Lesson 2 Architecture Day complete (7 decisions locked)
+- 22/04/2026 — ARCHITECTURE.md created with full spec (623 lines)
+- 22/04/2026 — IDEAS_PARKING updated with Comet/Gemini research note + Gadi holiday
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
