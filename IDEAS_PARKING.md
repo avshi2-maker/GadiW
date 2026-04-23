@@ -20,7 +20,7 @@
 ---
 
 ## NEW (review next session)
-
+- 23/04/2026 — Hebrew filename handling for GadiW: decide between UUID storage keys (recommended, industry standard) vs Python rename-to-English script vs raw Hebrew with careful URL encoding. Original Hebrew name stored in documents.file_name column regardless. Decide when building storage.js upload code.
 ### 21/04/2026 — Lesson 1 day
 - 22/04/2026 — Comet/Gemini research files on OneDrive — cherry-pick for Phase 2+ (template/data model design)
 - 22/04/2026 — Gadi replies tomorrow after Independence Day holiday
@@ -68,6 +68,7 @@
 ---
 
 ## PARKED (good ideas, NOT now)
+
 
 ### Multi-user / team features
 - [PARKED] Wife as back-office user
