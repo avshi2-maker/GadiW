@@ -1,7 +1,7 @@
 // src/main.js
 // App entry point — boots the right screen based on auth state.
 // Created: 23/04/2026 (Lesson 5)
-// Updated: 23/04/2026 (Lesson 6 — route to fileList after login)
+// Updated: 23/04/2026 (Lesson 6 — route to fileList + hardened session handling)
 
 import { supabase } from './lib/supabase.js';
 import { renderLogin } from './screens/login.js';
@@ -14,8 +14,23 @@ if (!appRoot) {
 }
 
 async function boot() {
-  var sessionResult = await supabase.auth.getSession();
-  var session = sessionResult.data.session;
+  var timeoutMs = 5000;
+  var sessionPromise = supabase.auth.getSession();
+  var timeoutPromise = new Promise(function (resolve) {
+    setTimeout(function () { resolve({ timedOut: true }); }, timeoutMs);
+  });
+
+  var raceResult = await Promise.race([sessionPromise, timeoutPromise]);
+
+  if (raceResult.timedOut) {
+    console.warn('[boot] getSession timed out after ' + timeoutMs + 'ms — clearing stored session and showing login');
+    await supabase.auth.signOut().catch(function () {});
+    try { localStorage.clear(); } catch (e) {}
+    renderLogin(appRoot);
+    return;
+  }
+
+  var session = raceResult.data ? raceResult.data.session : null;
 
   if (session) {
     await renderFileList(appRoot, session);

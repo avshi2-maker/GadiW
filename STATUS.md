@@ -5,7 +5,7 @@
 ---
 
 ## Current phase
-**LESSON 5** — Auth COMPLETE. Hebrew RTL login screen working end-to-end with Supabase. Ready for Lesson 6 (file list screen + fetch).
+**LESSON 6** — File List Screen COMPLETE. Hebrew RTL list of user's documents via RLS-filtered Supabase query. Ready for Lesson 7 (upload flow + storage integration).
 ---
 
 ## Where we are right now
@@ -45,6 +45,11 @@ Last session: Today (Lesson 3)
 - 23/04/2026 — Full auth cycle tested: login, logout, refresh-while-logged-in, refresh-while-logged-out, re-login — all working
 - 23/04/2026 — Test user avshi2@gmail.com created in Supabase Auth for dev testing
 - 23/04/2026 — .env.local created locally (git-ignored) with VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY
+- 23/04/2026 — Lesson 6 File List Screen complete: src/screens/fileList.js renders user's documents from Supabase via RLS-filtered query
+- 23/04/2026 — Seed data created: 1 test client (TEST-001) + 3 test documents linked to avshi2@gmail.com
+- 23/04/2026 — RLS validation test PASSED in production: 2nd user test@example.com correctly sees 0 documents (ownership isolation proven)
+- 23/04/2026 — Hardened boot sequence in main.js with 5s getSession timeout + auto-recovery to login screen
+- 23/04/2026 — KNOWN BUG parked: getSession() hangs on page reload with persistSession=true; hardening masks it, root cause TBD in Lesson 7
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -60,7 +65,6 @@ Last session: Today (Lesson 3)
 ## What is NOT done yet
 
 ### Remaining lessons toward Phase 1 ship
--- Lesson 6: File list screen (Screen 2) + fetch + search
 - Lesson 7: Upload flow + storage integration
 - Lesson 8: File detail screen (Screen 3) + preview + download
 - Lesson 9: Mobile responsive + polish
@@ -126,5 +130,5 @@ Last session: Today (Lesson 3)
 5. Tell Claude: "I am back, here is current STATUS.md, continue from where we left off"
 
 ---
-*Last updated: 23 April 2026 · End of Lesson 5 (Auth complete)*
+*Last updated: 23 April 2026 · End of Lesson 6 (File List complete, session-hang bug parked)*
 

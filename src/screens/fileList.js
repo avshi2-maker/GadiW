@@ -2,15 +2,10 @@
 // File list screen — fetches documents owned by the current user from Supabase
 // and renders them as a simple list. Hebrew RTL.
 // Created: 23/04/2026 (Lesson 6)
-// DEBUG VERSION
 
 import { supabase } from '../lib/supabase.js';
 
-console.log('[fileList] module loaded');
-
 export async function renderFileList(container, session) {
-  console.log('[fileList] renderFileList called', { container: !!container, session: !!session });
-
   container.innerHTML = `
     <div style="max-width: 800px; margin: 40px auto; padding: 24px; font-family: 'Heebo', sans-serif; direction: rtl;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #ddd; padding-bottom: 16px;">
@@ -23,13 +18,12 @@ export async function renderFileList(container, session) {
           יציאה
         </button>
       </div>
+
       <div id="file-list-content" style="min-height: 100px;">
         <p style="color: #666; text-align: center;">טוען מסמכים...</p>
       </div>
     </div>
   `;
-
-  console.log('[fileList] HTML rendered, attaching handlers');
 
   container.querySelector('#logout-btn').addEventListener('click', async function () {
     await supabase.auth.signOut();
@@ -37,25 +31,29 @@ export async function renderFileList(container, session) {
 
   var content = container.querySelector('#file-list-content');
 
-  console.log('[fileList] about to call supabase.from');
-
   var result = await supabase
     .from('documents')
     .select('id, file_name, file_size, mime_type, doc_tag, direction, doc_date, uploaded_at')
     .order('uploaded_at', { ascending: false });
 
-  console.log('[fileList] supabase returned', result);
-
   if (result.error) {
-    content.innerHTML = `<div style="padding: 16px; background: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c00;">שגיאה: ${result.error.message}</div>`;
+    content.innerHTML = `
+      <div style="padding: 16px; background: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c00;">
+        שגיאה בטעינת המסמכים: ${result.error.message}
+      </div>
+    `;
     return;
   }
 
   var docs = result.data || [];
-  console.log('[fileList] got', docs.length, 'docs');
 
   if (docs.length === 0) {
-    content.innerHTML = `<div style="padding: 32px; text-align: center; color: #666; background: #f9f9f9; border-radius: 4px;"><p>אין מסמכים להצגה</p></div>`;
+    content.innerHTML = `
+      <div style="padding: 32px; text-align: center; color: #666; background: #f9f9f9; border-radius: 4px;">
+        <p>אין מסמכים להצגה</p>
+        <p style="font-size: 14px; margin-top: 8px;">העלאת מסמכים תתווסף בשיעור הבא</p>
+      </div>
+    `;
     return;
   }
 
@@ -74,5 +72,8 @@ export async function renderFileList(container, session) {
     `;
   }).join('');
 
-  content.innerHTML = `<div style="color: #666; font-size: 14px; margin-bottom: 12px;">${docs.length} מסמכים</div>${rows}`;
+  content.innerHTML = `
+    <div style="color: #666; font-size: 14px; margin-bottom: 12px;">${docs.length} מסמכים</div>
+    ${rows}
+  `;
 }
