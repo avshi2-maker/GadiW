@@ -1,50 +1,64 @@
-# ─────────────────────────────────────────
-# .gitignore — GadiW project
-# Files and folders git should NEVER track
+﻿# ─────────────────────────────────────────
+# .gitignore — GadiW project (merged: Vite + security)
 # ─────────────────────────────────────────
 
-# Environment / secrets (NEVER commit API keys)
+# ─── Environment / secrets (NEVER commit API keys) ───
 .env
 .env.local
 .env.*.local
 *.key
 secrets/
 
-# Node.js dependencies (can be rebuilt from package.json)
+# ─── Logs ───
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── Node.js dependencies ───
 node_modules/
 package-lock.json.backup
 
-# Python virtual environments
+# ─── Build outputs ───
+dist
+dist-ssr
+*.local
+
+# ─── Python virtual environments ───
 venv/
 env/
 __pycache__/
 *.pyc
 *.pyo
 
-# Editor / IDE files
-.vscode/
-.idea/
+# ─── Editor / IDE files ───
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 *.swp
 *.swo
 *~
 
-# OS junk files
+# ─── OS junk files ───
 Thumbs.db
 .DS_Store
 desktop.ini
 
-# Build outputs (can be regenerated)
-dist/
-build/
-*.log
-
-# Temporary work / backups
+# ─── Temporary work / backups ───
 tmp/
 temp/
 *.bak
 *_backup.*
 *_old.*
 
-# Uploaded files that should not be versioned
+# ─── Uploaded files that should not be versioned ───
 uploads/private/
 test_audio/
