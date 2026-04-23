@@ -124,7 +124,7 @@
 - [PARKED] Convert design docs to podcast format for Gadi
   - Reason: Nice idea, not critical path
   - Revisit: When something interesting needs his absorption time
-
+- 23/04/2026 — BUG parked: supabase.auth.getSession() hangs indefinitely on page reload when persistSession=true. Workaround: main.js has 5s timeout that auto-clears storage and re-routes to login. Symptom: logs stop before 'about to call supabase.from', Network tab shows zero requests. Likely @supabase/supabase-js version issue or localStorage adapter quirk. Debug in Lesson 7: check package.json for SDK version, try explicit storage option, test with persistSession=false as comparison. Clean repro: log in → log out → log in → refresh = hang.
 ---
 
 ## TRASHED (with reason)
