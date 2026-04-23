@@ -5,7 +5,7 @@
 ---
 
 ## Current phase
-**LESSON 4** — Supabase Day COMPLETE. Phase 1 RLS + storage bucket ready. Ready for Lesson 5 (auth screen + Supabase client wiring).
+**LESSON 5** — Auth COMPLETE. Hebrew RTL login screen working end-to-end with Supabase. Ready for Lesson 6 (file list screen + fetch).
 ---
 
 ## Where we are right now
@@ -39,6 +39,12 @@ Last session: Today (Lesson 3)
 - 23/04/2026 — Lesson 4.B/C Storage complete: gadi-documents private bucket created with inbox/ + templates/ folders, 4 storage policies installed
 - 23/04/2026 — SQL_CHANGES.md created with full audit trail and verification queries for all SQL executed
 - 23/04/2026 — IDEAS_PARKING updated with Hebrew filename handling decision (deferred to storage.js)
+- 23/04/2026 — Lesson 5 Auth complete: @supabase/supabase-js installed, src/lib/supabase.js client wired with env vars
+- 23/04/2026 — Hebrew RTL login screen (src/screens/login.js) with signInWithPassword against Supabase
+- 23/04/2026 — src/main.js boots based on session state, listens to onAuthStateChange for login/logout
+- 23/04/2026 — Full auth cycle tested: login, logout, refresh-while-logged-in, refresh-while-logged-out, re-login — all working
+- 23/04/2026 — Test user avshi2@gmail.com created in Supabase Auth for dev testing
+- 23/04/2026 — .env.local created locally (git-ignored) with VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -54,8 +60,7 @@ Last session: Today (Lesson 3)
 ## What is NOT done yet
 
 ### Remaining lessons toward Phase 1 ship
-- Lesson 5: Login screen (Screen 1) + Supabase Auth integration
-- Lesson 6: File list screen (Screen 2) + fetch + search
+-- Lesson 6: File list screen (Screen 2) + fetch + search
 - Lesson 7: Upload flow + storage integration
 - Lesson 8: File detail screen (Screen 3) + preview + download
 - Lesson 9: Mobile responsive + polish
@@ -121,5 +126,5 @@ Last session: Today (Lesson 3)
 5. Tell Claude: "I am back, here is current STATUS.md, continue from where we left off"
 
 ---
-*Last updated: 23 April 2026 · End of Lesson 4 (Supabase Day complete)*
+*Last updated: 23 April 2026 · End of Lesson 5 (Auth complete)*
 
