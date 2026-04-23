@@ -6,13 +6,13 @@
 
 ## Current phase
 
-**LESSON 2** — Architecture Day COMPLETE. Ready for Lesson 3 (Vite setup + project skeleton).
+**LESSON 3** — Project Skeleton COMPLETE. Vite running locally. Ready for Lesson 4 (Supabase setup).
 ---
 
 ## Where we are right now
 
-Date: 21 April 2026  
-Last session: Today
+Date: 23 April 2026  
+Last session: Today (Lesson 3)
 
 ### Completed today
 - Cloned GadiW repo to `C:\dev\gadiv`
@@ -27,6 +27,14 @@ Last session: Today
 - 22/04/2026 — Lesson 2 Architecture Day complete (7 decisions locked)
 - 22/04/2026 — ARCHITECTURE.md created with full spec (623 lines)
 - 22/04/2026 — IDEAS_PARKING updated with Comet/Gemini research note + Gadi holiday
+- 23/04/2026 — Lesson 3 Project Skeleton Day complete
+- 23/04/2026 — Vite installed (v8.0.9) + npm dependencies
+- 23/04/2026 — HMR demo confirmed working
+- 23/04/2026 — Folder structure built per ARCHITECTURE.md (lib/screens/components/styles/utils)
+- 23/04/2026 — 14 placeholder files created with TODO markers for upcoming lessons
+- 23/04/2026 — index.html customized for Hebrew/RTL with Frank Ruhl Libre + Heebo fonts
+- 23/04/2026 — .gitignore merged (Vite default + our security rules)
+- 23/04/2026 — First mega-commit: 21 files, 1028 insertions
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -34,23 +42,23 @@ Last session: Today
 - Node.js installed
 - Python 3 installed
 - GitHub auth (push works)
-
+- Vite 8.0.9 dev server (HMR working)
+- npm 11.6.2
+- Node.js 24.11.1
 ---
 
 ## What is NOT done yet
 
-### Remaining in Lesson 1
--
-- Final foundation commit + verify on GitHub
+### Remaining lessons toward Phase 1 ship
+- Lesson 4: Supabase schema changes (matter_id optional + client_id) + RLS policies
+- Lesson 5: Login screen (Screen 1) + Supabase Auth integration
+- Lesson 6: File list screen (Screen 2) + fetch + search
+- Lesson 7: Upload flow + storage integration
+- Lesson 8: File detail screen (Screen 3) + preview + download
+- Lesson 9: Mobile responsive + polish
+- Lesson 10: Deploy to GitHub Pages + Gadi onboarding
 
-### Remaining in Lessons 2+
-- Design Phase 1 architecture (cloud document archive)
-- Set up Supabase Storage bucket for files
-- Build first HTML page (file upload UI)
-- Connect Supabase Auth (Gadi-only login)
-- Implement upload + list + download + organize
-- Deploy to GitHub Pages
-- Test with Gadi's real files (anonymized)
+-
 
 ---
 
