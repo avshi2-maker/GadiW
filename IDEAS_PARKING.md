@@ -27,6 +27,7 @@
 - 21/04/2026 — Test idea: VS Code is now my home [TRASHED - was just a test]
 - 22/04/2026 — develop ready made excel sheet for calculating Avshi's developing hours CRM with claude bot
 - 22/04/2026 — download from Comet all files to be test/used in Gadi's CRM
+- 23/04/2026 — app_config table with API keys is in OLD project (vmcipofovheztbjmhwsl), not Gadi_W_CRM. Need to recreate in Phase 3+
 ---
 
 ## SCHEDULED (committed for a phase)
