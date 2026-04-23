@@ -166,6 +166,7 @@ FROM pg_indexes
 WHERE schemaname = 'public'
   AND tablename = 'documents'
   AND indexname IN ('idx_documents_client_id', 'idx_documents_uploaded_by');
+  
 
 -- =================================================================
 -- END OF SCRIPT
@@ -196,3 +197,41 @@ WHERE schemaname = 'public'
 - STEP 1.3 (CHECK constraint) does not use `IF NOT EXISTS` — if you need to re-run, first issue: `ALTER TABLE public.documents DROP CONSTRAINT docs_has_owner;`
 
 ---
+## Lesson 4.B/C — Storage Bucket + Policies
+
+**Date:** 23/04/2026  
+**Author:** Avshi + Claude  
+**Status:** ✅ Executed and verified
+
+### Context
+
+With Phase 1 RLS policies in place on `documents`, `clients`, and `matters`, the next infrastructure need was a Supabase Storage bucket to hold the actual file contents. The `documents.file_url` column will eventually point to storage objects in this bucket.
+
+**Scope:** One private bucket, two folders, four storage policies, verified by a dashboard upload test.
+
+### What was built
+
+**Bucket:**
+- Name: `gadi-documents`
+- Visibility: **Private** (public toggle OFF — critical for legal docs)
+- File size limit: 50 MB
+- MIME types: unrestricted (filter in app logic later)
+
+**Folder structure:**
+- `inbox/` — for new/unfiled documents
+- `templates/` — for Gadi's standard document templates
+
+**Storage policies on `storage.objects`:**
+
+| Policy | Operation | Role | Scope |
+|---|---|---|---|
+| `gadi_docs_read_own` | SELECT | authenticated | `bucket_id = 'gadi-documents' AND owner = auth.uid()` |
+| `gadi_docs_write_own` | INSERT | authenticated | `bucket_id = 'gadi-documents' AND owner = auth.uid()` |
+| `gadi_docs_delete_own` | DELETE | authenticated | `bucket_id = 'gadi-documents' AND owner = auth.uid()` |
+| `gadi_docs_no_anon` | ALL | anon | `false` (explicit deny) |
+
+**No UPDATE policy by design** — file content in storage is immutable. App flow for "updating" a file is: upload new version → delete old version. Keeps an audit trail.
+
+### The SQL
+
+```sql

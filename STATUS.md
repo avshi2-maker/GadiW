@@ -5,8 +5,7 @@
 ---
 
 ## Current phase
-
-**LESSON 3** — Project Skeleton COMPLETE. Vite running locally. Ready for Lesson 4 (Supabase setup).
+**LESSON 4** — Supabase Day COMPLETE. Phase 1 RLS + storage bucket ready. Ready for Lesson 5 (auth screen + Supabase client wiring).
 ---
 
 ## Where we are right now
@@ -35,6 +34,11 @@ Last session: Today (Lesson 3)
 - 23/04/2026 — index.html customized for Hebrew/RTL with Frank Ruhl Libre + Heebo fonts
 - 23/04/2026 — .gitignore merged (Vite default + our security rules)
 - 23/04/2026 — First mega-commit: 21 files, 1028 insertions
+- 23/04/2026 — Lesson 4.A Supabase Day complete: dropped wide-open auth_all policies, installed ownership policies (users_own_*) on documents/clients/matters
+- 23/04/2026 — documents schema evolved: matter_id nullable, client_id added (FK to clients), docs_has_owner CHECK constraint, 2 indexes
+- 23/04/2026 — Lesson 4.B/C Storage complete: gadi-documents private bucket created with inbox/ + templates/ folders, 4 storage policies installed
+- 23/04/2026 — SQL_CHANGES.md created with full audit trail and verification queries for all SQL executed
+- 23/04/2026 — IDEAS_PARKING updated with Hebrew filename handling decision (deferred to storage.js)
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -50,7 +54,6 @@ Last session: Today (Lesson 3)
 ## What is NOT done yet
 
 ### Remaining lessons toward Phase 1 ship
-- Lesson 4: Supabase schema changes (matter_id optional + client_id) + RLS policies
 - Lesson 5: Login screen (Screen 1) + Supabase Auth integration
 - Lesson 6: File list screen (Screen 2) + fetch + search
 - Lesson 7: Upload flow + storage integration
@@ -118,5 +121,5 @@ Last session: Today (Lesson 3)
 5. Tell Claude: "I am back, here is current STATUS.md, continue from where we left off"
 
 ---
+*Last updated: 23 April 2026 · End of Lesson 4 (Supabase Day complete)*
 
-*Last updated: 21 April 2026 · End of Lesson 1 (in progress)*
