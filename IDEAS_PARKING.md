@@ -1,4 +1,4 @@
-﻿# IDEAS_PARKING — GadiW Project
+# IDEAS_PARKING — GadiW Project
 
 > Every wild idea, "what if we also...", future feature, vague hunch goes HERE first.
 > Reviewed at start of each session. Decided: scheduled / parked deeper / trashed.
@@ -22,12 +22,11 @@
 ## NEW (review next session)
 
 ### 21/04/2026 — Lesson 1 day
-- *(none yet — capture them as they come)*
 - 22/04/2026 — Comet/Gemini research files on OneDrive — cherry-pick for Phase 2+ (template/data model design)
 - 22/04/2026 — Gadi replies tomorrow after Independence Day holiday
 - 21/04/2026 — Test idea: VS Code is now my home [TRASHED - was just a test]
-- 21/04/2026 — Test idea: VS Code is now my home for all editing
-
+- 22/04/2026 — develop ready made excel sheet for calculating Avshi's developing hours CRM with claude bot
+- 22/04/2026 — download from Comet all files to be test/used in Gadi's CRM
 ---
 
 ## SCHEDULED (committed for a phase)
