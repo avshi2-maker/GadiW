@@ -186,7 +186,7 @@ WHERE schemaname = 'public'
 - [x] STEP 3.2 — documents columns verified
 - [x] STEP 3.3 — docs_has_owner constraint verified
 - [x] STEP 3.4 — indexes verified
-- [ ] File committed and pushed to GitHub
+- [x] File committed and pushed to GitHub
 
 ### Notes on recovery
 
