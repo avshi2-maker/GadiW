@@ -3,9 +3,6 @@
 > Living document. Update at the END of every work session.
 
 ---
-
-## Current phase
-## Current phase
 ## Current phase
 **LESSON 6.5 COMPLETE** — SDK wedge bug fixed (downgrade + REST fetch pattern). Hebrew RTL file list stable across page refreshes. Ready for Lesson 7 (upload flow + storage integration).
 
@@ -32,7 +29,6 @@ This applies to:
 
 **Why:** @supabase/supabase-js wedges silently on page reload due to navigator.locks bug. Reference implementation: `src/screens/fileList.js`. RLS is still enforced — REST goes through PostgREST same as the SDK would.
 
----
 ---
 
 ## Where we are right now

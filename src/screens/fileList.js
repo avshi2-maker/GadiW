@@ -3,11 +3,13 @@
 // and renders them as a simple list. Hebrew RTL.
 // Created: 23/04/2026 (Lesson 6)
 // Updated: 24/04/2026 — bypass SDK for query (SDK wedge workaround), use direct REST fetch
+// Updated: 24/04/2026 — Phase B: added upload button (placeholder handler)
 
 import { supabase } from '../lib/supabase.js';
 
 var SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 var SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { renderUploadForm } from './uploadForm.js';
 
 export async function renderFileList(container, session) {
   container.innerHTML = `
@@ -17,10 +19,16 @@ export async function renderFileList(container, session) {
           <h1 style="font-family: 'Frank Ruhl Libre', serif; font-size: 28px; margin: 0;">המסמכים שלי</h1>
           <p style="color: #666; margin: 4px 0 0; font-size: 14px;">${session.user ? session.user.email : ''}</p>
         </div>
-        <button id="logout-btn"
-          style="padding: 8px 16px; background: #c00; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
-          יציאה
-        </button>
+        <div style="display: flex; gap: 8px;">
+          <button id="upload-btn"
+            style="padding: 8px 16px; background: #1F3A5F; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; font-weight: 500;">
+            ➕ העלאת מסמך
+          </button>
+          <button id="logout-btn"
+            style="padding: 8px 16px; background: #c00; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
+            יציאה
+          </button>
+        </div>
       </div>
 
       <div id="file-list-content" style="min-height: 100px;">
@@ -37,6 +45,15 @@ export async function renderFileList(container, session) {
     }
     try { localStorage.removeItem('sb-pslwvkymccbngtyvgagj-auth-token'); } catch (e) {}
     window.location.reload();
+  });
+
+  container.querySelector('#upload-btn').addEventListener('click', function () {
+    renderUploadForm(
+      container,
+      session,
+      function onCancel() { renderFileList(container, session); },
+      function onSuccess() { renderFileList(container, session); }
+    );
   });
 
   var content = container.querySelector('#file-list-content');
