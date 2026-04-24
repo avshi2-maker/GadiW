@@ -14,29 +14,35 @@ if (!appRoot) {
 }
 
 async function boot() {
-  var timeoutMs = 5000;
-  var sessionPromise = supabase.auth.getSession();
-  var timeoutPromise = new Promise(function (resolve) {
-    setTimeout(function () { resolve({ timedOut: true }); }, timeoutMs);
-  });
+  // Read stored session directly from localStorage — bypasses broken getSession()
+  var storageKey = 'sb-pslwvkymccbngtyvgagj-auth-token';
+  var stored = null;
+  try {
+    var raw = localStorage.getItem(storageKey);
+    if (raw) { stored = JSON.parse(raw); }
+  } catch (e) {
+    console.warn('[boot] could not parse stored session, showing login', e);
+  }
 
-  var raceResult = await Promise.race([sessionPromise, timeoutPromise]);
-
-  if (raceResult.timedOut) {
-    console.warn('[boot] getSession timed out after ' + timeoutMs + 'ms — clearing stored session and showing login');
-    await supabase.auth.signOut().catch(function () {});
-    try { localStorage.clear(); } catch (e) {}
+  if (!stored || !stored.access_token || !stored.refresh_token) {
+    console.log('[boot] no stored session, showing login');
     renderLogin(appRoot);
     return;
   }
 
-  var session = raceResult.data ? raceResult.data.session : null;
+  // Check if token is expired (expires_at is in seconds, Date.now() is ms)
+  var nowSec = Math.floor(Date.now() / 1000);
+  var isExpired = stored.expires_at && stored.expires_at <= nowSec;
 
-  if (session) {
-    await renderFileList(appRoot, session);
-  } else {
+  if (isExpired) {
+    console.log('[boot] stored session expired, clearing and showing login');
+    try { localStorage.removeItem(storageKey); } catch (e) {}
     renderLogin(appRoot);
+    return;
   }
+
+  console.log('[boot] valid stored session found, rendering file list');
+  await renderFileList(appRoot, stored);
 }
 
 supabase.auth.onAuthStateChange(async function (event, session) {

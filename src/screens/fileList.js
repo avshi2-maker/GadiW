@@ -2,8 +2,12 @@
 // File list screen — fetches documents owned by the current user from Supabase
 // and renders them as a simple list. Hebrew RTL.
 // Created: 23/04/2026 (Lesson 6)
+// Updated: 24/04/2026 — bypass SDK for query (SDK wedge workaround), use direct REST fetch
 
 import { supabase } from '../lib/supabase.js';
+
+var SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+var SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export async function renderFileList(container, session) {
   container.innerHTML = `
@@ -11,7 +15,7 @@ export async function renderFileList(container, session) {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #ddd; padding-bottom: 16px;">
         <div>
           <h1 style="font-family: 'Frank Ruhl Libre', serif; font-size: 28px; margin: 0;">המסמכים שלי</h1>
-          <p style="color: #666; margin: 4px 0 0; font-size: 14px;">${session.user.email}</p>
+          <p style="color: #666; margin: 4px 0 0; font-size: 14px;">${session.user ? session.user.email : ''}</p>
         </div>
         <button id="logout-btn"
           style="padding: 8px 16px; background: #c00; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
@@ -26,26 +30,60 @@ export async function renderFileList(container, session) {
   `;
 
   container.querySelector('#logout-btn').addEventListener('click', async function () {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      // SDK may be wedged — fall back to manual logout
+    }
+    try { localStorage.removeItem('sb-pslwvkymccbngtyvgagj-auth-token'); } catch (e) {}
+    window.location.reload();
   });
 
   var content = container.querySelector('#file-list-content');
 
-  var result = await supabase
-    .from('documents')
-    .select('id, file_name, file_size, mime_type, doc_tag, direction, doc_date, uploaded_at')
-    .order('uploaded_at', { ascending: false });
-
-  if (result.error) {
+  // Bypass the SDK — use direct REST fetch with the token from session
+  var accessToken = session.access_token;
+  if (!accessToken) {
     content.innerHTML = `
       <div style="padding: 16px; background: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c00;">
-        שגיאה בטעינת המסמכים: ${result.error.message}
+        שגיאה: אין טוקן גישה
       </div>
     `;
     return;
   }
 
-  var docs = result.data || [];
+  var url = SUPABASE_URL + '/rest/v1/documents?select=id,file_name,file_size,mime_type,doc_tag,direction,doc_date,uploaded_at&order=uploaded_at.desc';
+
+  var docs = [];
+  try {
+    var response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      var errText = await response.text();
+      content.innerHTML = `
+        <div style="padding: 16px; background: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c00;">
+          שגיאה בטעינת המסמכים: ${errText}
+        </div>
+      `;
+      return;
+    }
+
+    docs = await response.json();
+  } catch (err) {
+    content.innerHTML = `
+      <div style="padding: 16px; background: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c00;">
+        שגיאה ברשת: ${err.message}
+      </div>
+    `;
+    return;
+  }
 
   if (docs.length === 0) {
     content.innerHTML = `

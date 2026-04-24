@@ -19,5 +19,9 @@ export var supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: false,
+    // Disable navigator.locks cross-tab session sync.
+    // Fixes getSession() hanging when other tabs hold the auth lock.
+    // Safe trade-off: solo-user CRM, no need for multi-tab auth coordination.
+    lock: function (name, acquireTimeout, fn) { return fn(); },
   },
 });
