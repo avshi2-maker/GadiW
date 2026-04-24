@@ -68,7 +68,36 @@
 ---
 
 ## PARKED (good ideas, NOT now)
+## 24/04/2026 — USB Migration Strategy (for Lesson 9)
 
+**Problem:** Gadi has ~1,000+ files on USB drive. Single-file web upload = 50+ hours of manual metadata entry. Not viable for bulk migration.
+
+**Solution — 3-tier approach:**
+
+### Tier 1 — Python batch migration script (Lesson 9)
+- `scan_usb.py` generates pre-filled Excel sheet with filenames, folder hints, file dates
+- Gadi (or helper) bulk-fills the sheet in Excel using sort/multi-select/paste — ~2-3 hours for 1,000 files
+- `migrate_to_gadiw.py --sheet X.xlsx --usb D:\` uploads all files + inserts documents rows
+- Fuzzy-match client_name to existing clients table
+- Progress bar + log file + error report for failures
+
+### Tier 2 — Bulk upload mode in web app (Lesson 9)
+- Multi-file select / drag-and-drop folder support
+- Table view: per-file rows + "apply to all" shared fields (client, direction, date, description)
+- Progress bar + per-file status during upload
+- Purpose: ongoing daily 10-20 file batches after the initial USB migration
+
+### Tier 3 — OCR auto-suggestions (Phase 2, NOT NOW)
+- Parse PDFs/images → extract text → auto-suggest doc_tag, doc_date, client_name
+- Requires Gadi to trust the system first. Do NOT build in Phase 1.
+
+**Key insight:** the bottleneck is metadata entry, not upload speed. Fix metadata workflow, not upload throughput.
+
+**Sequence:**
+1. Finish Lesson 7 ✓ (24/04/2026)
+2. Lesson 8 — view/download/preview (Gadi can verify uploads)
+3. Lesson 9 — BOTH tiers 1 + 2 (this is the real migration lesson)
+4. Lesson 10 — deploy + onboarding session using the migration tool
 
 ### Multi-user / team features
 - [PARKED] Wife as back-office user
@@ -126,7 +155,36 @@
   - Revisit: When something interesting needs his absorption time
 - 23/04/2026 — BUG parked: supabase.auth.getSession() hangs indefinitely on page reload when persistSession=true. Workaround: main.js has 5s timeout that auto-clears storage and re-routes to login. Symptom: logs stop before 'about to call supabase.from', Network tab shows zero requests. Likely @supabase/supabase-js version issue or localStorage adapter quirk. Debug in Lesson 7: check package.json for SDK version, try explicit storage option, test with persistSession=false as comparison. Clean repro: log in → log out → log in → refresh = hang.
 ---
+## 24/04/2026 — USB Migration Strategy (for Lesson 9)
 
+**Problem:** Gadi has ~1,000+ files on USB drive. Single-file web upload = 50+ hours of manual metadata entry. Not viable.
+
+**Solution: 3-tier approach**
+
+### Tier 1 — Python batch migration script (Lesson 9)
+- `scan_usb.py` → generates pre-filled Excel sheet with filenames, folder hints, file dates
+- Gadi (or helper) bulk-fills the sheet in Excel (sort, multi-select, paste) — 2-3 hours
+- `migrate_to_gadiw.py --sheet X.xlsx --usb D:\` → uploads all files + inserts documents rows
+- Fuzzy-match client_name to existing clients table
+- Progress bar + log file + error report
+
+### Tier 2 — Bulk upload mode in web app (Lesson 9)
+- Multi-file select / drag-and-drop folder
+- Table view: per-file rows + "apply to all" shared fields (client, direction, date)
+- Progress bar during upload
+- For ongoing daily 10-20 file batches (post-migration)
+
+### Tier 3 — OCR auto-suggestions (Phase 2, NOT NOW)
+- Parse PDFs/images → extract text → auto-suggest doc_tag, doc_date, client
+- Requires Gadi trust the system first. Do NOT build in Phase 1.
+
+**Key insight:** the bottleneck is metadata entry, not upload. Fix metadata workflow, not upload speed.
+
+**Sequence:**
+1. Finish Lesson 7 (single upload) ✓
+2. Lesson 8 (view/download) so Gadi can verify what he uploaded
+3. Lesson 9 (BOTH tiers 1 + 2) — this is the real migration lesson
+4. Lesson 10 (deploy + onboarding with migration tool)
 ## TRASHED (with reason)
 
 - [TRASHED 19/04/2026] USB fingerprint device + SMS 2FA security architecture

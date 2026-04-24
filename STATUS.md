@@ -4,7 +4,8 @@
 
 ---
 ## Current phase
-**LESSON 6.5 COMPLETE** — SDK wedge bug fixed (downgrade + REST fetch pattern). Hebrew RTL file list stable across page refreshes. Ready for Lesson 7 (upload flow + storage integration).
+## Current phase
+**LESSON 7 COMPLETE** — Upload flow working end-to-end. Single file upload to Storage + documents row insert, Hebrew RTL form with client dropdown. Tested with PDF, DOCX, JPG. Ready for Lesson 8 (file detail + download + preview).
 
 ---
 
@@ -83,6 +84,15 @@ Last session: Today (Lesson 3)
 - 24/04/2026 — Verified working: login → file list (3 docs) → F5 refresh → file list still loads. RLS still enforced (queries go via REST with user's access_token, RLS policies apply server-side same as via SDK)
 - 24/04/2026 — Pattern locked: ALL future Supabase queries in this project use direct REST fetch, NOT supabase.from(). SDK only used for auth (signInWithPassword, onAuthStateChange, signOut)
 - 24/04/2026 — HANDOVER_24042026_GETSESSION_BUG_v2.md archived (no longer active bug)
+- 24/04/2026 — Lesson 7 Phase A: Pre-flight pre-checks. Discovered documents schema (13 cols, uploaded_by auto-fills auth.uid), storage bucket config (private, 50MB limit), clients schema, doc_direction enum (פנימי/התקבל/נשלח)
+- 24/04/2026 — Lesson 7 Phase B: Blue "➕ העלאת מסמך" button added to fileList.js header, wired with placeholder handler
+- 24/04/2026 — Lesson 7 Phase C: Created src/screens/uploadForm.js — Hebrew RTL form with file picker, doc_tag, direction dropdown, doc_date (today default), client dropdown (REST-fetch populated), description textarea, cancel button. Form UI only, no upload logic yet.
+- 24/04/2026 — Lesson 7 Phase C: Wired fileList.js → renderUploadForm with onCancel/onSuccess callbacks for navigation
+- 24/04/2026 — Lesson 7 Phase D: Real upload logic — 2 REST calls (Storage POST + documents INSERT), progress states, Hebrew error/success messages, auto-return to list on success
+- 24/04/2026 — Lesson 7 Phase D: Hebrew filename bug caught in real-world test — Supabase Storage rejects non-ASCII keys. Fixed by sanitizing storage path (timestamp + random suffix + ASCII extension) while preserving original Hebrew name in documents.file_name column
+- 24/04/2026 — Lesson 7 Phase G: Tested 3 file types successfully — PDF (Sapir_Wellness_Engine_NDA.pdf), DOCX, JPG with Hebrew filename (חישובי שיפועים.jpg)
+- 24/04/2026 — Lesson 7 verified in DB: documents row correctly linked to storage object, RLS-enforced ownership via uploaded_by auto-fill, storage object metadata matches DB (size, mimetype, eTag integrity)
+- 24/04/2026 — Lesson 7 IDEAS_PARKING: bulk USB migration strategy documented (3-tier approach: Python batch script + in-app bulk upload + future OCR) — deferred to Lesson 9
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -163,5 +173,5 @@ Last session: Today (Lesson 3)
 5. Tell Claude: "I am back, here is current STATUS.md, continue from where we left off"
 
 ---
-*Last updated: 24 April 2026 · End of Lesson 6.5 (SDK wedge bug fixed, REST-fetch rule locked project-wide)*
+*Last updated: 24 April 2026 · End of Lesson 7 (Upload flow complete, tested with 3 file types, Hebrew filename bug fixed)*
 
