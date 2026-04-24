@@ -6,7 +6,33 @@
 
 ## Current phase
 ## Current phase
+## Current phase
 **LESSON 6.5 COMPLETE** — SDK wedge bug fixed (downgrade + REST fetch pattern). Hebrew RTL file list stable across page refreshes. Ready for Lesson 7 (upload flow + storage integration).
+
+---
+
+## ⚠️ PROJECT-WIDE RULE (locked 24/04/2026 after SDK wedge bug)
+
+**ALL Supabase data operations use direct REST fetch — NOT the SDK.**
+
+This applies to:
+- Queries (SELECT) → `fetch(SUPABASE_URL + '/rest/v1/table?...')`
+- Inserts (INSERT) → `fetch(... method: 'POST')`
+- Updates (UPDATE) → `fetch(... method: 'PATCH')`
+- Deletes (DELETE) → `fetch(... method: 'DELETE')`
+- Storage uploads → `fetch(SUPABASE_URL + '/storage/v1/object/...')`
+- Storage signed URLs → `fetch(SUPABASE_URL + '/storage/v1/object/sign/...')`
+
+**SDK is ONLY used for auth:** `signInWithPassword`, `signOut`, `onAuthStateChange`.
+
+**Required headers on every REST fetch:**
+- `apikey: SUPABASE_ANON_KEY`
+- `Authorization: Bearer ' + accessToken`  (from session)
+- `Content-Type: application/json`
+
+**Why:** @supabase/supabase-js wedges silently on page reload due to navigator.locks bug. Reference implementation: `src/screens/fileList.js`. RLS is still enforced — REST goes through PostgREST same as the SDK would.
+
+---
 ---
 
 ## Where we are right now
@@ -141,5 +167,5 @@ Last session: Today (Lesson 3)
 5. Tell Claude: "I am back, here is current STATUS.md, continue from where we left off"
 
 ---
-*Last updated: 24 April 2026 · End of Lesson 6.5 (SDK wedge bug fixed, file list stable)*
+*Last updated: 24 April 2026 · End of Lesson 6.5 (SDK wedge bug fixed, REST-fetch rule locked project-wide)*
 
