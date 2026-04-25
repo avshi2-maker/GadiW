@@ -4,8 +4,7 @@
 
 ---
 ## Current phase
-## Current phase
-**LESSON 7 COMPLETE** — Upload flow working end-to-end. Single file upload to Storage + documents row insert, Hebrew RTL form with client dropdown. Tested with PDF, DOCX, JPG. Ready for Lesson 8 (file detail + download + preview).
+**LESSON 8 COMPLETE** — File detail screen with download (signed URLs, Hebrew filenames preserved) and inline preview (PDF iframe, image inline, DOCX friendly fallback). Full file lifecycle now works: upload → list → click → view → download → preview. Ready for Lesson 9 (bulk upload + Python USB migration + mobile + search).
 
 ---
 
@@ -92,7 +91,14 @@ Last session: Today (Lesson 3)
 - 24/04/2026 — Lesson 7 Phase D: Hebrew filename bug caught in real-world test — Supabase Storage rejects non-ASCII keys. Fixed by sanitizing storage path (timestamp + random suffix + ASCII extension) while preserving original Hebrew name in documents.file_name column
 - 24/04/2026 — Lesson 7 Phase G: Tested 3 file types successfully — PDF (Sapir_Wellness_Engine_NDA.pdf), DOCX, JPG with Hebrew filename (חישובי שיפועים.jpg)
 - 24/04/2026 — Lesson 7 verified in DB: documents row correctly linked to storage object, RLS-enforced ownership via uploaded_by auto-fill, storage object metadata matches DB (size, mimetype, eTag integrity)
-- 24/04/2026 — Lesson 7 IDEAS_PARKING: bulk USB migration strategy documented (3-tier approach: Python batch script + in-app bulk upload + future OCR) — deferred to Lesson 9
+- 24/04/2026 — Lesson 7 IDEAS_PARKING: bulk USB migration strategy documented (3-tier approach: Python batch script + in-app bulk upload + future OCR) — deferred to 
+Lesson 9
+- 25/04/2026 — Lesson 8 Phase A: Pre-flight confirmed bucket still private. Created src/screens/fileDetail.js stub. Made fileList.js rows clickable with hover effects, wired to renderFileDetail with onBack callback
+- 25/04/2026 — Lesson 8 Phase B: Detail screen UI complete — navy header with filename/mime/size, action buttons (download + preview), 5-field metadata grid (תיוג, כיוון, תאריך, לקוח, תיאור), footer with upload time + UUID. Single REST call with FK join to clients table for client name display
+- 25/04/2026 — Lesson 8 Phase C: Real download via signed URLs — first attempt used <a href download> attribute, but cross-origin blocked it (file opened in tab, lost Hebrew filename). Fixed with Blob approach: fetch bytes → create blob URL → trigger same-origin download → preserves Hebrew filename across all 3 file types
+- 25/04/2026 — Lesson 8 Phase D: Inline preview with smart MIME detection — PDF in iframe (700px scrollable), images inline (max-width 100%), DOCX/other shows friendly orange "not available" fallback. Toggle behavior: click preview again → hides. Smooth scroll to preview area on open
+- 25/04/2026 — Lesson 8 verified: all 15 end-to-end tests passed (login, list, hover, click row, detail, back, upload form, cancel, download all 3 types with Hebrew names, preview PDF + JPG + DOCX fallback, preview toggle, F5 refresh, logout, console clean)
+- 25/04/2026 — Lesson 8 IDEAS_PARKING: DOCX inline preview deferred (3 options analyzed: Microsoft Viewer rejected for client privacy, mammoth.js noted for post-Phase 1, status quo shipped for now)
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -108,11 +114,10 @@ Last session: Today (Lesson 3)
 ## What is NOT done yet
 
 ### Remaining lessons toward Phase 1 ship
-- Lesson 7: Upload flow + storage integration
-- Lesson 8: File detail screen (Screen 3) + preview + download
-- Lesson 9: Mobile responsive + polish
+### Remaining lessons toward Phase 1 ship
+- Lesson 8: File detail screen + preview + download
+- Lesson 9: Bulk upload (in-app) + Python USB migration script + mobile responsive + search/filter
 - Lesson 10: Deploy to GitHub Pages + Gadi onboarding
-
 -
 
 ---
@@ -173,5 +178,5 @@ Last session: Today (Lesson 3)
 5. Tell Claude: "I am back, here is current STATUS.md, continue from where we left off"
 
 ---
-*Last updated: 24 April 2026 · End of Lesson 7 (Upload flow complete, tested with 3 file types, Hebrew filename bug fixed)*
+*Last updated: 25 April 2026 · End of Lesson 8 (Detail screen + download with Hebrew filenames + inline preview for PDF/images)*
 

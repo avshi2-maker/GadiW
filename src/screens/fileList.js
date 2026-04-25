@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase.js';
 var SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 var SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 import { renderUploadForm } from './uploadForm.js';
+import { renderFileDetail } from './fileDetail.js';
 
 export async function renderFileList(container, session) {
   container.innerHTML = `
@@ -116,7 +117,10 @@ export async function renderFileList(container, session) {
     var sizeKB = doc.file_size ? Math.round(doc.file_size / 1024) + ' KB' : '—';
     var date = doc.doc_date ? new Date(doc.doc_date).toLocaleDateString('he-IL') : '—';
     return `
-      <div style="padding: 14px 16px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 8px; background: #fff; display: grid; grid-template-columns: 1fr auto auto auto; gap: 16px; align-items: center;">
+      <div class="doc-row" data-doc-id="${doc.id}"
+        style="padding: 14px 16px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 8px; background: #fff; display: grid; grid-template-columns: 1fr auto auto auto; gap: 16px; align-items: center; cursor: pointer; transition: background 0.15s, border-color 0.15s;"
+        onmouseover="this.style.background='#f9fafe'; this.style.borderColor='#1F3A5F';"
+        onmouseout="this.style.background='#fff'; this.style.borderColor='#eee';">
         <div>
           <div style="font-weight: 500; font-size: 16px;">${doc.file_name}</div>
           <div style="color: #888; font-size: 13px; margin-top: 2px;">${doc.doc_tag || '—'} · ${doc.direction}</div>
@@ -131,4 +135,18 @@ export async function renderFileList(container, session) {
     <div style="color: #666; font-size: 14px; margin-bottom: 12px;">${docs.length} מסמכים</div>
     ${rows}
   `;
+
+  // Wire each row to navigate to file detail
+  var rowEls = content.querySelectorAll('.doc-row');
+  rowEls.forEach(function (rowEl) {
+    rowEl.addEventListener('click', function () {
+      var docId = rowEl.getAttribute('data-doc-id');
+      renderFileDetail(
+        container,
+        session,
+        docId,
+        function onBack() { renderFileList(container, session); }
+      );
+    });
+  });
 }

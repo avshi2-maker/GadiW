@@ -179,6 +179,16 @@
 - Requires Gadi trust the system first. Do NOT build in Phase 1.
 
 **Key insight:** the bottleneck is metadata entry, not upload. Fix metadata workflow, not upload speed.
+## 25/04/2026 — DOCX Inline Preview (deferred to post-Phase 1)
+
+**Current behavior:** DOCX shows "תצוגה מקדימה לא זמינה" message → user downloads + opens in Word.
+
+**Why deferred:** Browsers cannot natively render DOCX. Three options exist:
+- Microsoft Office Viewer (public URL pass-through) — privacy concern for legal docs, requires Gadi's consent
+- mammoth.js library (client-side conversion) — privacy-safe but loses formatting fidelity, +1hr work
+- Status quo — friendly fallback message, force download + Word
+
+**Decision:** Ship Phase 1 with status quo. Revisit after Gadi feedback. If he asks for DOCX preview, prefer mammoth.js over Microsoft Viewer for privacy.
 
 **Sequence:**
 1. Finish Lesson 7 (single upload) ✓
