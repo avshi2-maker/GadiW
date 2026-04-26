@@ -4,7 +4,7 @@
 
 ---
 ## Current phase
-**LESSON 9A COMPLETE** — Search + filter UI on file list (client-side filtering, AND logic, 4 dimensions: text/tag/direction/client). Auto-populated dropdowns from actual data, live result count, clear-filters button, empty-state UX. Upload form validation hardened (client + tag required, prevents docs_has_owner constraint violations). Ready for Lesson 9D (in-app bulk upload).
+**LESSON 9D COMPLETE** — In-app bulk upload working end-to-end. Drag-and-drop dropzone + multi-file picker + per-row tag editor + apply-to-all + sequential upload loop with error isolation + orphan cleanup + visual progress UI (per-file status icons, progress bar, retry-failed flow). Tested with happy path, validation failures, mid-batch network failure recovery. Ready for Lesson 9E (document edit screen).
 
 ---
 
@@ -107,6 +107,17 @@ Lesson 9
 - 26/04/2026 — Lesson 9A Phase D: upload form validation hardened — client now required ("בחר לקוח (חובה)"), doc_tag now required ("חיוני לחיפוש"). Red field highlight (3sec) on validation failure. Prevents future docs_has_owner constraint violations and ensures all docs are searchable by tag
 - 26/04/2026 — Lesson 9A IDEAS_PARKING: full client intake form (53 fields, 9 categories from customer_intake.xlsx) deferred to Phase 2; external/AI search fallback rejected for Phase 1 (Decision #1: zero AI; lawyer privacy)
 - 26/04/2026 — Lesson 9A verified: 11/11 filter tests passed (search, 3 dropdowns, AND combo, clear button, empty state, result count, row click, console clean) + 5/5 validation tests passed (block empty client, block empty tag, red field highlight, success path, dropdown label "בחר לקוח (חובה)")
+- 26/04/2026 — Lesson 9 plan revised: 9D split moves UP to second (was last), 9E inserted (document edit screen — needed for migration recovery), 9B/9C still last
+- 26/04/2026 — Lesson 9D Phase A: drag-and-drop dropzone + multi-file picker (multiple attribute), dropzone visual feedback on dragover/dragleave/drop, hidden file input triggered via styled button or dropzone click
+- 26/04/2026 — Lesson 9D Phase B: file selection state as JS array (`selectedFiles[]` with `{id, file, tag, status, errorMessage, documentId}`), `renderFileTable()` re-renders from array on every change, automatic mode switching: 0 files → empty / 1 file → grey strip + OLD תיוג visible / 2+ files → bulk table with per-row tag inputs, hides OLD תיוג. Duplicate detection by name+size, oversize detection (>50MB) with skip alerts in Hebrew
+- 26/04/2026 — Lesson 9D Phase C: + הוסף קבצים נוספים button (re-triggers picker), total size footer (count + cumulative bytes), smart submit button label ("העלה N מסמכים" auto-updates with selectedFiles count)
+- 26/04/2026 — Lesson 9D Phase D: sequential (NOT parallel) upload loop using for-await — avoids Supabase rate limits and simplifies error tracking. Per-file 2-step transaction: Storage POST → documents INSERT. On INSERT failure, automatic Storage cleanup via deleteOrphanStorageObject() to prevent leftover files. Per-file try/catch isolates failures — one file's error never crashes the batch
+- 26/04/2026 — Lesson 9D Phase D: bulk-mode validations enforce all rows have tags before submission (red border highlight on first untagged row); single-mode keeps original top-level תיוג validation. Mid-batch failures: successful files saved, failed files retained in form for retry button "נסה שוב את N שנכשלו"
+- 26/04/2026 — Lesson 9D Phase E: visual progress UI replaces alert popups — navy header with "📤 מעלה X מתוך Y" + green ✓ counter + red ✕ counter, white progress bar fills based on doneCount/totalCount, per-file rows with status icon (⌛/⏳/✅/❌), color-coded backgrounds (yellow=current, green=success, red=failed), inline Hebrew error messages under failed rows
+- 26/04/2026 — Lesson 9D RLS data fix discovered: clients table created via SQL Editor had `created_by IS NULL` for some rows, blocking detail screen JOIN. Fix: UPDATE clients SET created_by = '5055bacf-...' WHERE client_number IN ('TEST-001'..'TEST-006'). Future intake forms via REST will auto-fill via column_default = auth.uid()
+- 26/04/2026 — Lesson 9D testing exposed network-failure orphan: when Wi-Fi killed mid-batch, Storage POST succeeded but DB INSERT + cleanup DELETE both failed (no internet). Result: 1 orphan storage file. Cleaned manually via Storage REST API DELETE from browser console (Supabase blocks raw SQL DELETE on storage.objects)
+- 26/04/2026 — Lesson 9D verified: 10/10 end-to-end tests passed (login, search/filter, detail+download+preview, single-file regression, bulk happy path, missing-client validation, missing-tag-in-row validation, Wi-Fi failure with retry success, file list integrity after bulk, final docs/storage count match 29=29)
+- 26/04/2026 — Lesson 9D IDEAS_PARKING entries: (1) DOCX inline preview deferred — 3 options analyzed, status quo for Phase 1, (2) full client intake form 53 fields/9 categories deferred to Phase 2 — current schema already has 20 of needed fields, (3) external/AI search fallback rejected for Phase 1, (4) duplicate filename handling — kept as feature for legal workflow, (5) filter pills UX enhancement — deferred to Lesson 9B mobile lesson, (6) network-failure orphan handling — Lesson 9C Python migration MUST have retry-cleanup queue, (7) Storage object deletion protection — must use API not SQL
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -123,9 +134,9 @@ Lesson 9
 
 ### Remaining lessons toward Phase 1 ship
 ### Remaining lessons toward Phase 1 ship
-- Lesson 9D: In-app bulk upload (multi-file picker, drag-drop, table view, "apply to all" shared metadata)
-- Lesson 9B: Mobile responsive (CSS media queries, touch targets, mobile file picker)
-- Lesson 9C: Python USB migration script (scan_usb.py + migrate_to_gadiw.py + Excel template)
+- Lesson 9E: Document edit screen (modify tag/direction/client/description on existing docs — required for migration recovery)
+- Lesson 9B: Mobile responsive (CSS media queries, touch targets, mobile file picker, filter pills polish)
+- Lesson 9C: Python USB migration script (scan_usb.py + migrate_to_gadiw.py + Excel template + retry-cleanup queue)
 - Lesson 10: Deploy to GitHub Pages + Gadi onboarding
 -
 
@@ -187,4 +198,4 @@ Lesson 9
 5. Tell Claude: "I am back, here is current STATUS.md, continue from where we left off"
 
 ---
-*Last updated: 26 April 2026 · End of Lesson 9A (Search + filter UI, RLS bug fixed, upload validation hardened)*
+*Last updated: 26 April 2026 · End of Lesson 9D (Bulk upload with drag-drop, progress UI, retry-failed, network-failure-tested)*
