@@ -68,7 +68,40 @@
 - [SCHEDULED-P5] Replace paper handbook
 - [SCHEDULED-P5] Link to hearings table
 - [SCHEDULED-P5] Court deadline reminders
+### 26/04/2026 — Gadi's Logo Branding (Lesson 9B or 10 polish — BEFORE beta)
 
+**Source:** Avshi captured logo image during Lesson 9E session. File: 
+`גד ויספלד · משרד עורכי דין ונוטריון`. Clean Hebrew typography, navy text on cream/yellow background.
+
+**Why this matters:**
+- Trust-building for Gadi (his name on his app = his tool, not "some software")
+- Lawyers are image-conscious about their practice presentation
+- Visible branding = "this is real, professional, mine"
+
+**Where to add the logo:**
+1. **Login screen** — large logo above the email/password fields. First touchpoint.
+2. **File list header** — small logo next to "המסמכים שלי" (replaces or accompanies "avshi2@gmail.com" subtitle).
+3. **Edit/upload form headers** — small logo top-left.
+4. **Document edit success banner** — small logo as part of the green confirmation card. Reinforces "your archive saved your document."
+
+**Technical implementation:**
+1. Save logo as `public/gadi-logo.png` (or .svg if vectorized)
+2. Reference via `<img src="/gadi-logo.png" alt="גד ויספלד · משרד עורכי דין ונוטריון" />`
+3. Standard sizes:
+   - Login screen: 280px wide
+   - List header: 120px wide
+   - Form headers: 100px wide
+   - Success banner: 80px wide
+
+**When to build:**
+- Option A — Lesson 9B (mobile responsive lesson — natural place to touch all UI surfaces)
+- Option B — Lesson 10 (deploy + onboarding lesson — final polish before showing Gadi)
+- **Recommendation: Lesson 10.** Logo is a "wow" moment best saved for the final reveal.
+
+**Asset needed from Gadi:**
+- Higher resolution logo (PNG 1000px+ or ideally SVG)
+- Confirmation he wants to use this exact logo (vs a slight variant)
+- Avshi to ask Gadi during onboarding: "send me your logo file for the app branding"
 ---
 
 ## PARKED (good ideas, NOT now)
@@ -250,6 +283,13 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 - BUT: low priority since real-world Wi-Fi failures are rare in stable home/office networks
 - Park as "background reconciliation" enhancement for after Phase 1 ship
 
+## 26/04/2026 — Audit Trail for Document Edits (Phase 2 nice-to-have)
+
+**Why parked:** Gadi has no compliance requirement that mandates audit trail for self-edits in Phase 1. He's the only user. SOC2/HIPAA compliance kicks in only when this becomes multi-tenant SaaS.
+
+**When to revisit:** When Phase 2 multi-user (wife as back-office) ships, OR when first paying customer wants compliance certifications.
+
+**Design (when needed):** Trigger-based table `documents_audit` with: id, doc_id, edited_by, edited_at, field_name, old_value, new_value. UI: detail screen tab "היסטוריית עריכות" showing changes.
 ---
 
 ### Multi-user / team features

@@ -4,7 +4,8 @@
 
 ---
 ## Current phase
-**LESSON 9D COMPLETE** — In-app bulk upload working end-to-end. Drag-and-drop dropzone + multi-file picker + per-row tag editor + apply-to-all + sequential upload loop with error isolation + orphan cleanup + visual progress UI (per-file status icons, progress bar, retry-failed flow). Tested with happy path, validation failures, mid-batch network failure recovery. Ready for Lesson 9E (document edit screen).
+*## Current phase
+**LESSON 9E COMPLETE** — Document edit screen working end-to-end. Click ערוך on detail → edit screen pre-populated with current values → modify tag/direction/date/client/description → REST PATCH save → green success banner with Hebrew timestamp + 4-sec auto-navigate. Validations enforce client + tag required (matches upload form rules). File metadata (name, size, mime, upload time, uploaded_by) shown read-only — file content is immutable, new version = new upload. Ready for Lesson 9B (mobile responsive Android-focused).
 
 ---
 
@@ -118,6 +119,13 @@ Lesson 9
 - 26/04/2026 — Lesson 9D testing exposed network-failure orphan: when Wi-Fi killed mid-batch, Storage POST succeeded but DB INSERT + cleanup DELETE both failed (no internet). Result: 1 orphan storage file. Cleaned manually via Storage REST API DELETE from browser console (Supabase blocks raw SQL DELETE on storage.objects)
 - 26/04/2026 — Lesson 9D verified: 10/10 end-to-end tests passed (login, search/filter, detail+download+preview, single-file regression, bulk happy path, missing-client validation, missing-tag-in-row validation, Wi-Fi failure with retry success, file list integrity after bulk, final docs/storage count match 29=29)
 - 26/04/2026 — Lesson 9D IDEAS_PARKING entries: (1) DOCX inline preview deferred — 3 options analyzed, status quo for Phase 1, (2) full client intake form 53 fields/9 categories deferred to Phase 2 — current schema already has 20 of needed fields, (3) external/AI search fallback rejected for Phase 1, (4) duplicate filename handling — kept as feature for legal workflow, (5) filter pills UX enhancement — deferred to Lesson 9B mobile lesson, (6) network-failure orphan handling — Lesson 9C Python migration MUST have retry-cleanup queue, (7) Storage object deletion protection — must use API not SQL
+- 26/04/2026 — Lesson 9E Phase A: added ✏️ ערוך button to fileDetail.js action bar (between download and preview), navy outline style, placeholder click handler
+- 26/04/2026 — Lesson 9E Phase B: created src/screens/fileEdit.js — fetches single doc by id via REST, pre-populates Hebrew RTL form (tag/direction/date/client/description), shows read-only file info banner with name/size/mime, top + bottom cancel buttons, save button placeholder
+- 26/04/2026 — Lesson 9E Phase C: real REST PATCH (Prefer: return=minimal) updates documents row, validations match upload form (client + tag required, red border highlight), success state replaces form with big green banner: ✅ icon + "המסמך נשמר בהצלחה" + Hebrew DD/MM/YYYY · HH:MM:SS timestamp + manual חזרה למסמך button + 4-sec auto-navigate
+- 26/04/2026 — Lesson 9E Phase C polish: success-banner timer increased from 2 to 4 seconds based on UX testing — gives Gadi time to register the save before navigation (trust-building for fear-of-tech user)
+- 26/04/2026 — Lesson 9E IDEAS_PARKING: (1) Audit trail for document edits deferred to Phase 2 (no compliance need yet), (2) Gadi's logo branding scheduled for Lesson 10 deploy (login screen + headers + success banners — trust-building Phase 1 polish before beta)
+- 26/04/2026 — Lesson 9E verified: 6/6 tests pass — happy path save, SQL verification, manual back button, missing-client validation, missing-tag validation, change-client-assignment with file list filter verification
+
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -198,4 +206,4 @@ Lesson 9
 5. Tell Claude: "I am back, here is current STATUS.md, continue from where we left off"
 
 ---
-*Last updated: 26 April 2026 · End of Lesson 9D (Bulk upload with drag-drop, progress UI, retry-failed, network-failure-tested)*
+*Last updated: 26 April 2026 · End of Lesson 9E (Document edit screen with success banner — Gadi can now fix metadata mistakes after migration)*

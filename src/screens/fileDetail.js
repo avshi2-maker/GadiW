@@ -5,6 +5,7 @@
 // Updated: 25/04/2026 (Phase B — real metadata UI with REST fetch)
 
 import { supabase } from '../lib/supabase.js';
+import { renderFileEdit } from './fileEdit.js';
 
 var SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 var SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -117,6 +118,10 @@ export async function renderFileDetail(container, session, docId, onBack) {
       <button id="download-btn"
         style="padding: 10px 20px; background: #1F3A5F; color: #fff; border: none; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer;">
         ⬇ הורדה
+      </button>
+      <button id="edit-btn"
+        style="padding: 10px 20px; background: #fff; color: #1F3A5F; border: 1px solid #1F3A5F; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer;">
+        ✏️ ערוך
       </button>
       <button id="preview-btn"
         style="padding: 10px 20px; background: #fff; color: #1F3A5F; border: 1px solid #1F3A5F; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer;">
@@ -234,6 +239,19 @@ export async function renderFileDetail(container, session, docId, onBack) {
     }
   });
 
+  container.querySelector('#edit-btn').addEventListener('click', function () {
+    renderFileEdit(
+      container,
+      session,
+      docId,
+      function onCancel() {
+        renderFileDetail(container, session, docId, onBack);
+      },
+      function onSaved() {
+        renderFileDetail(container, session, docId, onBack);
+      }
+    );
+  });
  container.querySelector('#preview-btn').addEventListener('click', async function () {
     var btn = this;
     var previewArea = container.querySelector('#preview-area');
