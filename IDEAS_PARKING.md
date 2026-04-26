@@ -189,6 +189,72 @@
 - Status quo — friendly fallback message, force download + Word
 
 **Decision:** Ship Phase 1 with status quo. Revisit after Gadi feedback. If he asks for DOCX preview, prefer mammoth.js over Microsoft Viewer for privacy.
+## IDEAS_PARKING - 26/04/2026
+BUILD GADI MOBILE APP THAT WILL SYNC WITH GADI CRM FILES/VOICE/PICTURES [USE BENI_POCKET ANDROID AS SAMPLE]
+## 25/04/2026 — Full Client Intake Form (Phase 2/3 spec, NOT FOR NOW)
+
+**Source:** customer_intake.xlsx provided by Avshi (53 fields across 9 categories).
+
+**Categorization (which Phase each category belongs to):**
+## 26/04/2026 — Search Fallback / External Search (Phase 2 candidate)
+
+**Question raised:** Should searches with no results suggest external sources (chats, Google, AI, etc.)?
+
+**Decision:** NO for Phase 1. Reasons:
+1. Privacy — lawyer's search terms must stay inside the archive, never leave to Google/external
+2. Decision #1 locked: "Phase 1 = cloud archive only" + "Gadi in fear/AI zone — zero AI features"
+3. "No results" is the correct, honest, professional answer for a private archive
+4. Adding a fallback would imply Gadi can't trust his own data — undermines the core value prop
+
+**Wait for Gadi's actual feedback after Beta.** If he says "I wish I could search external sources from here," that becomes a Phase 2 feature request from the real user.
+
+**Possible Phase 2 directions IF Gadi asks:**
+- Search inside document content (OCR + full-text search) — far more useful than external
+- Search his own past meetings/emails (if he ever connects calendar/Gmail) — Phase 3+
+- "Did you mean X?" suggestions based on his existing tags — small AI, only if he opens up to AI
+
+### Already covered by existing `clients` table (Phase 1, no work needed)
+- מספר_לקוח → client_number ✓
+- שם_פרטי, שם_משפחה, שם_מלא → first_name, last_name, full_name ✓
+- תעודת_זהות_או_חפ → id_number ✓
+- תאריך_לידה → ❌ NOT in clients table — would need ALTER TABLE in Phase 2
+- כתובת_מלאה → address + city + postal_code ✓
+- טלפון_נייד / טלפון_נוסף → phone_mobile, phone_other ✓
+- דוא"ל → email ✓
+- מקור_הפניה → source_id, source_notes ✓
+- שפה_מועדפת → ❌ NOT in clients — Phase 2 ALTER TABLE
+- אופן_יצירת_קשר_מועדף → ❌ NOT in clients — Phase 2 ALTER TABLE
+- consent_marketing, consent_date, consent_scope ✓ (already there)
+- notes ✓
+
+### Belongs to `matters` table (already exists in DB)
+- מספר_תיק_פנימי, שם_תיק, סוג_הליך, ערכאה, תיאור_ראשוני, מטרת_הלקוח, סכום_משוער, צדדים_מעורבים, התיישנות_משוערת, מועדים_ידועים, סטטוס_תיק, תכנית_פעולה_ראשונית, הערות_פנימיות, עו"ד_מטפל
+
+### Conflict-of-interest module (Phase 2 — separate feature)
+- תאריך_בדיקת_ניגוד, מבצע_הבדיקה, תוצאת_הבדיקה, צדדים_לבדיקה, הערות_ציות
+
+### Calendar / hearings module (Phase 3+ — out of Phase 1 scope per Decision #1)
+- תאריך/שעת/מיקום_פגישת_קליטה, השתתפים, סיכום_פגישה
+- קישור_ליומן (Outlook/Google integration)
+- היסטוריית פגישות + דיונים (linked screens)
+
+### Legal research module (Phase 3+ — definitely out of Phase 1 scope)
+- חוקים_רלוונטיים, תקנות_הליך, פסיקה_עיקרית, מאגר_פסיקה, סיכום_הלכות
+
+### Document management — already built in Phase 1 ✓
+- תיקיית_קבצים_לקוח, תיקיית_קבצים_תיק, קישור_לאינדקס_מסמכים, מסמכים_שהתקבלו_בקליטה, מסמכים_נדרשים_מהלקוח
+
+**Phase 2 plan (post-Gadi-trip, post-feedback):**
+1. ALTER TABLE clients ADD COLUMN birth_date, preferred_language, preferred_contact_method
+2. Build Hebrew RTL Client Intake form using existing clients table fields
+3. Build Matter intake form (5-step wizard like the Gadi Legal CRM Avshi already built in Feb 2026 — reuse that pattern)
+4. Conflict-of-interest module (4-step wizard already exists in legacy Gadi project pslwvkymccbngtyvgagj — port the SQL pattern)
+
+**Phase 3 plan (after Gadi has 100+ clients in system, asking for more):**
+- Calendar/meetings integration
+- Legal research database links
+
+**Critical reminder (for future Avshi):** Do NOT start Phase 2 until Gadi explicitly asks for it. He's currently in fear/AI/technology zone. Phase 1 first, then let HIS feedback drive Phase 2.
 
 **Sequence:**
 1. Finish Lesson 7 (single upload) ✓

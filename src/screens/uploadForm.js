@@ -105,7 +105,7 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
 
     if (resp.ok) {
       var clients = await resp.json();
-      var optionsHtml = '<option value="">-- ללא לקוח --</option>';
+      var optionsHtml = '<option value="">-- בחר לקוח (חובה) --</option>';
       clients.forEach(function (c) {
         optionsHtml += '<option value="' + c.id + '">' + c.full_name + '</option>';
       });
@@ -141,6 +141,24 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
     // Validate file size (50MB = 52428800 bytes)
     if (file.size > 52428800) {
       showStatus(statusDiv, 'הקובץ גדול מדי. גודל מקסימלי: 50MB', 'error');
+      return;
+    }
+
+    // Validate client is selected (DB requires every document to have a client)
+    if (!clientInput.value) {
+      showStatus(statusDiv, 'יש לבחור לקוח לפני העלאת המסמך', 'error');
+      clientInput.focus();
+      clientInput.style.borderColor = '#c00';
+      setTimeout(function () { clientInput.style.borderColor = '#ccc'; }, 3000);
+      return;
+    }
+
+    // Validate doc_tag is filled (good practice — searchable)
+    if (!docTagInput.value.trim()) {
+      showStatus(statusDiv, 'יש למלא תיוג מסמך (חיוני לחיפוש)', 'error');
+      docTagInput.focus();
+      docTagInput.style.borderColor = '#c00';
+      setTimeout(function () { docTagInput.style.borderColor = '#ccc'; }, 3000);
       return;
     }
 

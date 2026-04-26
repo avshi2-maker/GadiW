@@ -4,7 +4,7 @@
 
 ---
 ## Current phase
-**LESSON 8 COMPLETE** — File detail screen with download (signed URLs, Hebrew filenames preserved) and inline preview (PDF iframe, image inline, DOCX friendly fallback). Full file lifecycle now works: upload → list → click → view → download → preview. Ready for Lesson 9 (bulk upload + Python USB migration + mobile + search).
+**LESSON 9A COMPLETE** — Search + filter UI on file list (client-side filtering, AND logic, 4 dimensions: text/tag/direction/client). Auto-populated dropdowns from actual data, live result count, clear-filters button, empty-state UX. Upload form validation hardened (client + tag required, prevents docs_has_owner constraint violations). Ready for Lesson 9D (in-app bulk upload).
 
 ---
 
@@ -99,6 +99,14 @@ Lesson 9
 - 25/04/2026 — Lesson 8 Phase D: Inline preview with smart MIME detection — PDF in iframe (700px scrollable), images inline (max-width 100%), DOCX/other shows friendly orange "not available" fallback. Toggle behavior: click preview again → hides. Smooth scroll to preview area on open
 - 25/04/2026 — Lesson 8 verified: all 15 end-to-end tests passed (login, list, hover, click row, detail, back, upload form, cancel, download all 3 types with Hebrew names, preview PDF + JPG + DOCX fallback, preview toggle, F5 refresh, logout, console clean)
 - 25/04/2026 — Lesson 8 IDEAS_PARKING: DOCX inline preview deferred (3 options analyzed: Microsoft Viewer rejected for client privacy, mammoth.js noted for post-Phase 1, status quo shipped for now)
+- 26/04/2026 — Lesson 9 split into 4 mini-lessons (9A search, 9D bulk, 9B mobile, 9C Python migration) due to scope. Order locked: 9A → 9D → 9B → 9C
+- 26/04/2026 — Lesson 9A Phase A: Pre-flight — added 5 test clients (TEST-002 to TEST-006), redistributed 13 docs across all 6 clients via SQL UPDATE for filter testing
+- 26/04/2026 — Lesson 9A Phase A bug discovered: clients table RLS policy `users_own_clients (created_by = auth.uid())` blocked detail screen JOIN for clients with NULL created_by. Fix: UPDATE clients SET created_by = user_uuid. Future intake forms via REST auto-fill via column_default = auth.uid()
+- 26/04/2026 — Lesson 9A Phase B: fileList.js rewritten with filter panel (search box + 3 dropdowns: tag/direction/client), live client-side filtering, result count "מציג X מתוך Y מסמכים", smart empty state with 🔍 icon. Architecture: fetch ALL docs once, filter in memory — instant UX up to ~5,000 docs
+- 26/04/2026 — Lesson 9A Phase B: filter dropdowns auto-populated from actual data (unique tags + unique clients found in user's documents). Embedded REST query with FK join: `clients(full_name)` for client names
+- 26/04/2026 — Lesson 9A Phase D: upload form validation hardened — client now required ("בחר לקוח (חובה)"), doc_tag now required ("חיוני לחיפוש"). Red field highlight (3sec) on validation failure. Prevents future docs_has_owner constraint violations and ensures all docs are searchable by tag
+- 26/04/2026 — Lesson 9A IDEAS_PARKING: full client intake form (53 fields, 9 categories from customer_intake.xlsx) deferred to Phase 2; external/AI search fallback rejected for Phase 1 (Decision #1: zero AI; lawyer privacy)
+- 26/04/2026 — Lesson 9A verified: 11/11 filter tests passed (search, 3 dropdowns, AND combo, clear button, empty state, result count, row click, console clean) + 5/5 validation tests passed (block empty client, block empty tag, red field highlight, success path, dropdown label "בחר לקוח (חובה)")
 ### Tools confirmed working
 - Git CLI (clone, add, commit, push)
 - PowerShell terminal
@@ -115,8 +123,9 @@ Lesson 9
 
 ### Remaining lessons toward Phase 1 ship
 ### Remaining lessons toward Phase 1 ship
-- Lesson 8: File detail screen + preview + download
-- Lesson 9: Bulk upload (in-app) + Python USB migration script + mobile responsive + search/filter
+- Lesson 9D: In-app bulk upload (multi-file picker, drag-drop, table view, "apply to all" shared metadata)
+- Lesson 9B: Mobile responsive (CSS media queries, touch targets, mobile file picker)
+- Lesson 9C: Python USB migration script (scan_usb.py + migrate_to_gadiw.py + Excel template)
 - Lesson 10: Deploy to GitHub Pages + Gadi onboarding
 -
 
@@ -178,5 +187,4 @@ Lesson 9
 5. Tell Claude: "I am back, here is current STATUS.md, continue from where we left off"
 
 ---
-*Last updated: 25 April 2026 · End of Lesson 8 (Detail screen + download with Hebrew filenames + inline preview for PDF/images)*
-
+*Last updated: 26 April 2026 · End of Lesson 9A (Search + filter UI, RLS bug fixed, upload validation hardened)*
