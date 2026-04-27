@@ -3,6 +3,7 @@
 // Created: 24/04/2026 (Lesson 7)
 // Updated: 26/04/2026 — Lesson 9D Phases A-D
 // Updated: 26/04/2026 — Lesson 9D Phase E: visual progress UI replaces alert popups
+// Updated: 26/04/2026 — Lesson 9B Phase E: data-screen="upload" + .up-header class for mobile
 
 import { supabase } from '../lib/supabase.js';
 
@@ -11,9 +12,31 @@ var SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export async function renderUploadForm(container, session, onCancel, onSuccess) {
   container.innerHTML = `
-    <div style="max-width: 700px; margin: 40px auto; padding: 24px; font-family: 'Heebo', sans-serif; direction: rtl;">
+    <style>
+      @media (max-width: 768px) {
+        [data-screen="upload"] {
+          max-width: 100% !important;
+          margin: 0 !important;
+          padding: 16px 12px !important;
+          box-sizing: border-box !important;
+        }
+        [data-screen="upload"] .up-header {
+          flex-direction: column !important;
+          align-items: stretch !important;
+          gap: 12px !important;
+        }
+        [data-screen="upload"] .up-header h1 {
+          font-size: 22px !important;
+          text-align: right !important;
+        }
+        [data-screen="upload"] .up-header #cancel-btn {
+          width: 100% !important;
+        }
+      }
+    </style>
+    <div data-screen="upload" style="max-width: 700px; margin: 40px auto; padding: 24px; font-family: 'Heebo', sans-serif; direction: rtl;">
 
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #ddd; padding-bottom: 16px;">
+      <div class="up-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #ddd; padding-bottom: 16px;">
         <h1 id="form-title" style="font-family: 'Frank Ruhl Libre', serif; font-size: 28px; margin: 0;">העלאת מסמך חדש</h1>
         <button id="cancel-btn"
           style="padding: 8px 16px; background: #888; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
@@ -51,7 +74,7 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
             style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; direction: rtl;" />
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="up-direction-date-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
           <div>
             <label style="display: block; font-weight: 500; margin-bottom: 6px;">כיוון <span style="color: #c00;">*</span></label>
             <select id="direction-input" required
@@ -292,7 +315,7 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
         <div>${rowsHtml}</div>
       </div>
 
-      <div style="background: #eef4ff; border: 1px solid #c5d6f0; border-radius: 6px; padding: 12px; margin-bottom: 12px; display: flex; gap: 8px; align-items: center;">
+      <div class="up-bulk-apply" style="background: #eef4ff; border: 1px solid #c5d6f0; border-radius: 6px; padding: 12px; margin-bottom: 12px; display: flex; gap: 8px; align-items: center;">
         <span style="font-size: 13px; color: #1F3A5F; white-space: nowrap;">💡 החל תיוג על כל הקבצים:</span>
         <input type="text" id="bulk-tag-input" placeholder="לדוגמה: חוזה"
           style="flex: 1; padding: 6px 8px; border: 1px solid #ccc; border-radius: 3px; font-family: inherit; direction: rtl; font-size: 13px;" />
@@ -302,7 +325,7 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
         </button>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 8px 12px; background: #fafbfc; border-radius: 4px; border: 1px dashed #ddd;">
+      <div class="up-add-more" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 8px 12px; background: #fafbfc; border-radius: 4px; border: 1px dashed #ddd;">
         <button type="button" id="add-more-files-btn"
           style="padding: 6px 14px; background: #fff; color: #1F3A5F; border: 1px solid #1F3A5F; border-radius: 3px; font-size: 13px; cursor: pointer;">
           + הוסף קבצים נוספים
@@ -350,7 +373,6 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
     updateSubmitLabel();
   }
 
-  // ===== PHASE E: Progress UI =====
   function renderProgressUI(currentIndex) {
     if (selectedFiles.length === 0) {
       progressPanel.style.display = 'none';
@@ -607,7 +629,6 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
     submitBtn.style.opacity = '0.6';
     submitBtn.style.cursor = 'wait';
 
-    // Hide form sections during upload — show progress panel only
     fileTableContainer.style.display = 'none';
     docTagInputBlock.style.display = 'none';
     statusDiv.style.display = 'none';
@@ -624,7 +645,6 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
       entry.documentId = null;
     });
 
-    // Initial progress render (all pending)
     renderProgressUI(-1);
 
     var successCount = 0;
@@ -656,7 +676,6 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
       renderProgressUI(i);
     }
 
-    // ===== Final state =====
     if (failureCount === 0) {
       submitBtn.textContent = '✓ הסתיים בהצלחה';
       submitBtn.style.background = '#2e7d32';
@@ -666,15 +685,12 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
     } else if (successCount === 0) {
       submitBtn.textContent = 'נסה שוב';
       submitBtn.style.background = '#1F3A5F';
-      // Restore form so user can retry
       restoreFormForRetry();
       resetButton(submitBtn);
     } else {
       submitBtn.textContent = 'נסה שוב את ' + failureCount + ' שנכשלו';
       submitBtn.style.background = '#1F3A5F';
-      // Keep only failed files for retry
       selectedFiles = selectedFiles.filter(function (entry) { return entry.status === 'failed'; });
-      // Reset their status so retry shows them as pending again
       selectedFiles.forEach(function (e) {
         e.status = 'pending';
         e.errorMessage = null;

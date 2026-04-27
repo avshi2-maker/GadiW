@@ -11,7 +11,7 @@ var SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export async function renderFileEdit(container, session, docId, onCancel, onSaved) {
   // ===== Initial loading shell =====
   container.innerHTML = `
-    <div style="max-width: 700px; margin: 40px auto; padding: 24px; font-family: 'Heebo', sans-serif; direction: rtl;">
+    <div data-screen="fileedit" style="max-width: 700px; margin: 40px auto; padding: 24px; font-family: 'Heebo', sans-serif; direction: rtl;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #ddd; padding-bottom: 16px;">
         <h1 style="font-family: 'Frank Ruhl Libre', serif; font-size: 28px; margin: 0;">עריכת פרטי מסמך</h1>
         <button id="cancel-btn"

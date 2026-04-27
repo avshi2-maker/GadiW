@@ -1,3 +1,4 @@
+import './lib/mobile.css';
 // src/main.js
 // App entry point — boots the right screen based on auth state.
 // Created: 23/04/2026 (Lesson 5)

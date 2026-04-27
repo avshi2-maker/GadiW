@@ -6,6 +6,7 @@
 // Updated: 24/04/2026 — Phase B Lesson 7: upload button
 // Updated: 25/04/2026 — Lesson 8 Phase A: clickable rows for detail navigation
 // Updated: 26/04/2026 — Lesson 9A Phase B: search + filter UI
+// Updated: 26/04/2026 — Lesson 9B Phase C: data-screen + class markers for mobile CSS
 
 import { supabase } from '../lib/supabase.js';
 import { renderUploadForm } from './uploadForm.js';
@@ -17,15 +18,15 @@ var SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export async function renderFileList(container, session) {
   // ===== Initial shell =====
   container.innerHTML = `
-    <div style="max-width: 900px; margin: 40px auto; padding: 24px; font-family: 'Heebo', sans-serif; direction: rtl;">
+    <div data-screen="filelist" style="max-width: 900px; margin: 40px auto; padding: 24px; font-family: 'Heebo', sans-serif; direction: rtl;">
 
       <!-- Header -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #ddd; padding-bottom: 16px;">
+      <div class="fl-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #ddd; padding-bottom: 16px;">
         <div>
           <h1 style="font-family: 'Frank Ruhl Libre', serif; font-size: 28px; margin: 0;">המסמכים שלי</h1>
           <p style="color: #666; margin: 4px 0 0; font-size: 14px;">${session.user ? session.user.email : ''}</p>
         </div>
-        <div style="display: flex; gap: 8px;">
+        <div class="fl-header-buttons" style="display: flex; gap: 8px;">
           <button id="upload-btn"
             style="padding: 8px 16px; background: #1F3A5F; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; font-weight: 500;">
             ➕ העלאת מסמך
@@ -43,7 +44,7 @@ export async function renderFileList(container, session) {
           <input type="text" id="search-input" placeholder="🔎 חיפוש בשם קובץ או תיוג..."
             style="width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 15px; direction: rtl; background: #fff;" />
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end;">
+        <div class="fl-filter-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end;">
           <div>
             <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 500;">תיוג</label>
             <select id="filter-tag"
@@ -136,7 +137,6 @@ export async function renderFileList(container, session) {
     return;
   }
 
-  // ===== Empty database state =====
   if (allDocs.length === 0) {
     content.innerHTML = `
       <div style="padding: 32px; text-align: center; color: #666; background: #f9f9f9; border-radius: 4px;">
@@ -147,10 +147,8 @@ export async function renderFileList(container, session) {
     return;
   }
 
-  // ===== Populate filter dropdowns from actual data =====
   filterPanel.style.display = 'block';
 
-  // Unique tags
   var uniqueTags = {};
   allDocs.forEach(function (d) {
     if (d.doc_tag && d.doc_tag.trim()) { uniqueTags[d.doc_tag] = true; }
@@ -163,7 +161,6 @@ export async function renderFileList(container, session) {
     tagSelect.appendChild(opt);
   });
 
-  // Unique clients (from the JOIN)
   var uniqueClients = {};
   allDocs.forEach(function (d) {
     if (d.client_id && d.clients && d.clients.full_name) {
@@ -181,7 +178,6 @@ export async function renderFileList(container, session) {
       clientSelect.appendChild(opt);
     });
 
-  // ===== Filter state =====
   var filters = { search: '', tag: '', direction: '', client: '' };
 
   function applyFilters() {
@@ -231,8 +227,8 @@ export async function renderFileList(container, session) {
             <div style="font-weight: 500; font-size: 16px;">${escapeHtml(doc.file_name)}</div>
             <div style="color: #888; font-size: 13px; margin-top: 2px;">${escapeHtml(doc.doc_tag || '—')} · ${escapeHtml(doc.direction)}</div>
           </div>
-          <div style="color: #666; font-size: 13px;">${sizeKB}</div>
-          <div style="color: #666; font-size: 13px;">${date}</div>
+          <div class="doc-row-size" style="color: #666; font-size: 13px;">${sizeKB}</div>
+          <div class="doc-row-date" style="color: #666; font-size: 13px;">${date}</div>
         </div>
       `;
     }).join('');
@@ -244,7 +240,6 @@ export async function renderFileList(container, session) {
       ${rows}
     `;
 
-    // Wire row clicks
     content.querySelectorAll('.doc-row').forEach(function (rowEl) {
       rowEl.addEventListener('click', function () {
         var docId = rowEl.getAttribute('data-doc-id');
@@ -284,7 +279,6 @@ export async function renderFileList(container, session) {
     applyFilters();
   });
 
-  // ===== Initial render =====
   applyFilters();
 }
 

@@ -236,7 +236,40 @@
 
 ---
 
-### 26/04/2026 — Filter Pills UX Enhancement (Lesson 9B polish)
+### 26/04/2026 — Filter UX Bundle (Phase 2 polish — bigger than initially thought)
+
+**Two related issues identified during 9D + 9B testing:**
+
+**Issue 1 — Multi-filter AND-logic invisibility (from 9D testing):**
+When multiple filters active simultaneously (search + tag + direction + client), users get "no results" but can't see which filter is killing the search. AND-logic is correct but invisible.
+
+**Issue 2 — Filter persistence after navigation (from 9B testing):**
+User searches "mp4" → clicks result → goes to detail → clicks back to list → filter STILL active. New search "חוזה" returns 0 because old filters AND new search yield empty intersection. User must click "נקה סינון" before each new search. Confusing.
+
+**Why tooltip won't fix this:** Lawyers don't read tooltips. Software must adapt to user behavior, not vice versa.
+
+**Solution — Filter Pills + Smart Navigation Reset (~60 min, Phase 2 polish lesson):**
+
+1. **Active filter pills row above results:**
+   - 🔎 פעילים: [חיפוש: mp4 ✕] [תיוג: חוזה ✕] [כיוון: פנימי ✕] [לקוח: כהן ✕]
+   - Click ✕ on individual pill → removes only that filter
+   - Pills only render when at least one filter active
+   - "נקה הכל" button only appears when 2+ filters active
+
+2. **Smart navigation reset behavior:**
+   - On detail → back-to-list navigation: keep filters (current behavior)
+   - On any explicit "new search" action (e.g., user clears search box THEN starts typing): auto-reset OTHER filters
+   - Add small ✕ inside search input (X clears the search text only, not other filters)
+
+3. **Empty state intelligence:**
+   - When 0 results + filters active: show specifically "אין מסמכים התואמים לחיפוש 'mp4' עם הסינונים: תיוג=חוזה, כיוון=פנימי" (lists active filters by name)
+   - One-click action: "[הסר את כל הסינונים והשאר רק 'mp4']"
+
+**Where to build:** Dedicated polish lesson AFTER Phase 1 deploy. Could be Lesson 11 or Phase 2 first item.
+
+**Why NOT in Phase 1:** Adding 60 min now risks blowing the trip deadline. Filter pain is real but workaround (נקה סינון button) exists. Phase 1 = ship the archive; Phase 2 = polish the UX.
+
+**Decision: PARKED until Phase 2.** Update STATUS.md when Phase 1 deploys to remember this is "first Phase 2 priority."
 
 **Problem identified during 9D testing:** When multiple filters are active simultaneously (search box + tag + direction + client), users get "no results" but can't easily see which filter is killing the search. AND-logic is correct but invisible.
 
@@ -290,6 +323,128 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 **When to revisit:** When Phase 2 multi-user (wife as back-office) ships, OR when first paying customer wants compliance certifications.
 
 **Design (when needed):** Trigger-based table `documents_audit` with: id, doc_id, edited_by, edited_at, field_name, old_value, new_value. UI: detail screen tab "היסטוריית עריכות" showing changes.
+## 26/04/2026 — GadiW Pocket Mobile Companion App (Phase 2 — POST-TRIP)
+
+**Source pattern:** Beni Pocket (avshi2-maker, Android-deployed, working perfectly).
+**Reference file:** Avshi has the full index.html captured in this session.
+
+**Concept:** Single-file HTML mobile-first app, separate from main GadiW, that:
+1. Connects to GadiW's same Supabase (`pslwvkymccbngtyvgagj`)
+2. Lets Gadi photograph documents from court / client meetings → upload to GadiW archive
+3. Receives push notifications for daily tasks (court dates, deadlines, follow-ups)
+4. Syncs Gadi's voice memos for transcription
+5. Shows pending items dashboard (calls to return, documents to file)
+
+**Key Beni Pocket patterns to reuse:**
+- Bottom nav with 4-5 panels (one active at a time)
+- Touch-friendly 44px+ buttons
+- Dark theme (better for evening/court use)
+- Camera + gallery + PDF upload buttons in grid
+- Active project selector at top (in GadiW context = active client/matter)
+- Day brief banner with collapsible details
+- 100dvh viewport for mobile browsers
+- Heebo font with full RTL
+
+**Key DIFFERENCES from Beni Pocket (must change):**
+- Auth required (Gadi login on phone) — Supabase email + password (or passkey)
+- RLS enforced — no anon key abuse
+- Files go to Supabase Storage (not Cloudinary) — privacy for legal docs
+- Push notifications via Supabase Realtime + service worker
+- Different Supabase project URL/key
+
+**Timeline:** Phase 2, AFTER:
+1. Gadi uses GadiW desktop for 2-3 months
+2. Gadi explicitly asks for mobile companion
+3. Phase 1 ships and is stable
+
+**Estimated build time:** 6-8 hours of focused work. Worth a dedicated lesson series (Lessons 11-14).
+
+**Decision:** PARKED. Do NOT build before Phase 1 deploy. Reference Beni Pocket index.html as starting template.
+## 26/04/2026 — BUG to fix before ship: edit→detail navigation console error
+
+**Symptom:** Edit a doc → click 💾 שמור → green success card → 4-sec auto-navigate to detail screen → screen shows correctly with new data → BUT console shows red error:
+`Uncaught (in promise) TypeError: Cannot read properties of null (reading 'addEventListener') at renderFileDetail (fileDetail.js:175)`
+
+**User-visible impact:** ZERO. Data saves, screen renders, error is console-only.
+
+**Likely cause:** Stale event listener from previous render trying to attach to elements that no longer exist after green-banner replaced the form DOM.
+
+**To debug tomorrow:**
+1. Open `src/screens/fileDetail.js` line 175
+2. Find the `addEventListener` call there
+3. Check if the element it targets actually exists at that moment
+4. Likely fix: wrap in a null check `if (someBtn) someBtn.addEventListener(...)` OR ensure renderFileDetail isn't called twice
+
+**Time estimate:** 10-15 min fix. Must do before deploy (Lesson 10).
+---
+
+### 26/04/2026 — Upload Form Mobile Header Clipping (Phase 2 cosmetic)
+
+**Problem:** On mobile (Android Chrome <768px), the upload form's header title "העלאת מסמך חדש" is clipped on the right edge — visible as "לאת מסמך חדש". The cancel button stays in the top-left corner instead of stacking below.
+
+**Tried during Lesson 9B Phase E (26/04/2026):**
+1. External mobile.css with `[data-screen="upload"] .up-header { flex-direction: column }` — didn't apply
+2. CSS `:has()` selector approach — didn't apply
+3. Inline `<style>` block in component innerHTML — didn't apply (TBD why)
+
+**Likely root cause (best guess):** The form's outer `<div>` has inline `style="max-width: 700px; margin: 40px auto;"` which the cascade isn't overriding cleanly on mobile. RTL direction + flex justify-content:space-between pushes the title outside the viewport on the right side.
+
+**User-visible impact:** Cosmetic only.
+- ✅ Form is FULLY FUNCTIONAL — drop zone works, file picker works, bulk table works, single-file mode works, validations work, progress UI works, retry works
+- ✅ ביטול button is still tappable and works
+- ❌ Title is half-clipped — Gadi can still understand the screen ("העלאת מסמך" partially visible is enough context)
+- ❌ Looks unprofessional but not broken
+
+**Why parked:** Lesson 9B is about responsive foundations, not pixel-perfection. The form ships as functionally complete. Cosmetic header polish is not worth blocking the trip deadline (14 days).
+
+**To fix in Phase 2 polish lesson:**
+1. Refactor uploadForm.js header to NOT use `flex justify-content: space-between` 
+2. Use a simple `<header><h1>title</h1><button>cancel</button></header>` and let CSS Grid handle layout
+3. Or: replace inline `style=` attributes with class-based styling so the cascade works as expected
+4. Test on real Android device (DevTools emulation may not match exactly)
+
+**Time estimate when fixing:** 30 min (refactor + test)
+
+**Decision:** PARKED — visible flaw, but not a ship-blocker. Document the limitation in Lesson 10 onboarding so Gadi isn't surprised on his phone.
+---
+
+### 26/04/2026 — Mobile Bulk File Row Text Clipping (Phase 2 cosmetic)
+
+**Problem:** On mobile bulk upload table, filenames are clipped showing ".g" / ".." instead of "cover-facade.jpg". Desktop displays full filenames correctly.
+
+**Root cause:** Same family as upload header bug — inline `style="..."` attributes (text-overflow:ellipsis, white-space:nowrap) inside dynamically-generated HTML have higher specificity than `@media (max-width: 768px)` rules trying to redistribute the layout.
+
+**User-visible impact:** Cosmetic only.
+- ✅ Bulk upload functionality is fully working (3 files uploaded successfully in test)
+- ✅ Tag inputs visible and tappable
+- ✅ ✕ remove buttons work
+- ✅ Total size shown
+- ❌ Filenames truncated to 2-3 chars on mobile bulk table only
+- Single-file mode shows filename correctly
+
+**Phase 2 fix:** Refactor the bulk file row HTML to NOT use inline styles. Move all styling to CSS classes. Then media queries can override cleanly. ~45 min refactor.
+
+**Why parked:** Lesson 9B ships responsive foundations. Cosmetic polish blocks no functionality.
+
+---
+
+### 26/04/2026 — "Apply Tag to All" Box Clears After Click (UX confusion)
+
+**Problem:** In bulk upload, user types tag in "💡 החל תיוג על כל הקבצים" main box → clicks "החל על הכל" button → tag IS applied to all rows correctly, BUT the main box appears to clear and rows look empty in main display (rows actually have the tag, just visually subtle).
+
+**Root cause:** `applyTagToAll(tag)` calls `renderFileTable()` which regenerates the HTML, creating a fresh empty `#bulk-tag-input` (loses user's typed text). The row inputs DO have the new tag value but it's not visually obvious because each row's input also uses placeholder styling.
+
+**User-visible impact:** UX confusion — user thinks click didn't work, may click again or give up.
+
+**Phase 2 fix options:**
+1. Show a brief green flash/toast: "✓ תיוג 'X' הוחל על 3 קבצים"
+2. Don't clear the main bulk-tag-input box after apply
+3. Make applied tags visually prominent in row inputs (bold, different color)
+4. Add a subtle animation when row inputs receive the new value
+
+**Why parked:** Functionality works correctly — only the visual feedback is unclear. Document in Lesson 10 onboarding so Gadi knows the click works even if not obvious.
+
+**Time estimate:** 20 min fix in Phase 2 polish lesson.
 ---
 
 ### Multi-user / team features

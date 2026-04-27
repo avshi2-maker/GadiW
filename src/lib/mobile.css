@@ -1,0 +1,629 @@
+/* src/lib/mobile.css
+   Global mobile-aware CSS for GadiW.
+   Loaded once in main.js → applies to all screens.
+   Created: 26/04/2026 (Lesson 9B Phase A — mobile foundation)
+   Updated: 26/04/2026 — Phase B: login screen mobile
+   Updated: 26/04/2026 — Phase C: file list mobile
+*/
+
+/* ========================================================================
+   GLOBAL TOUCH BEHAVIORS — apply on ALL screen sizes
+   ======================================================================== */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ========================================================================
+   TOUCH-FRIENDLY INPUT SIZES — apply globally
+   ======================================================================== */
+
+input, select, textarea, button {
+  font-size: 16px;
+}
+
+button {
+  min-height: 44px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ========================================================================
+   MOBILE BREAKPOINT — phones (≤ 768px wide)
+   All Phase B/C/D/E/F screen-specific rules live below
+   ======================================================================== */
+
+@media (max-width: 768px) {
+
+  body {
+    overflow-x: hidden;
+  }
+
+  input, select, textarea {
+    padding: 12px !important;
+  }
+
+  button {
+    min-height: 48px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  body, #app {
+    margin: 0 !important;
+  }
+
+  div, form, section {
+    max-width: 100vw;
+  }
+
+  /* ====================================================================
+     PHASE B — LOGIN SCREEN MOBILE
+     ==================================================================== */
+
+  [data-screen="login"] {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px 20px !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+    min-height: 100dvh;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+
+  [data-screen="login"] > * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  [data-screen="login"] form {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  [data-screen="login"] h1 {
+    font-size: 26px !important;
+    text-align: center;
+    margin-bottom: 24px !important;
+  }
+
+  [data-screen="login"] p {
+    text-align: center;
+    font-size: 14px !important;
+  }
+
+  [data-screen="login"] input {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  [data-screen="login"] button[type="submit"] {
+    width: 100% !important;
+    padding: 16px !important;
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    margin-top: 8px !important;
+  }
+
+  /* ====================================================================
+     PHASE C — FILE LIST SCREEN MOBILE
+     ==================================================================== */
+
+  [data-screen="filelist"] {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  [data-screen="filelist"] * {
+    box-sizing: border-box;
+  }
+
+  /* HEADER stack: title on top, buttons below */
+  [data-screen="filelist"] .fl-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 12px !important;
+  }
+
+  [data-screen="filelist"] .fl-header h1 {
+    font-size: 24px !important;
+    text-align: right;
+  }
+
+  [data-screen="filelist"] .fl-header p {
+    font-size: 13px !important;
+  }
+
+  /* HEADER buttons stacked vertically, full-width */
+  [data-screen="filelist"] .fl-header-buttons {
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  [data-screen="filelist"] .fl-header-buttons button {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+  }
+
+  /* FILTER PANEL — stack the 3 dropdowns vertically */
+  [data-screen="filelist"] #filter-panel {
+    padding: 12px !important;
+  }
+
+  [data-screen="filelist"] .fl-filter-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  [data-screen="filelist"] .fl-filter-grid select {
+    padding: 12px !important;
+    font-size: 15px !important;
+    width: 100% !important;
+  }
+
+  [data-screen="filelist"] #search-input {
+    padding: 14px !important;
+    font-size: 16px !important;
+  }
+
+  [data-screen="filelist"] #clear-filters-btn {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* DOC ROWS: switch from 4-column grid to single-column stacked */
+  [data-screen="filelist"] .doc-row {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    padding: 12px 14px !important;
+  }
+
+  /* Date and size inline at bottom of each card */
+  [data-screen="filelist"] .doc-row-size,
+  [data-screen="filelist"] .doc-row-date {
+    display: inline-block;
+    margin-left: 10px;
+    color: #888 !important;
+    font-size: 12px !important;
+  }
+
+  /* Filename emphasis */
+  [data-screen="filelist"] .doc-row > div:first-child > div:first-child {
+    font-size: 15px !important;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+}
+
+/* ========================================================================
+   ULTRA-SMALL PHONES (≤ 380px) — older Android, iPhone SE
+   ======================================================================== */
+
+@media (max-width: 380px) {
+
+  body {
+    font-size: 14px;
+  }
+
+  .padded-section {
+    padding: 12px !important;
+  }
+  /* ====================================================================
+     PHASE D — DETAIL SCREEN MOBILE
+     ==================================================================== */
+
+  [data-screen="filedetail"] {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  [data-screen="filedetail"] * {
+    box-sizing: border-box;
+  }
+
+  /* Page header: stack title + back button */
+  [data-screen="filedetail"] > div > div:first-child {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  [data-screen="filedetail"] h1 {
+    font-size: 22px !important;
+    text-align: right;
+    margin: 0 !important;
+  }
+
+  [data-screen="filedetail"] #back-btn {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* Filename header banner — keep navy banner but adjust padding */
+  [data-screen="filedetail"] #detail-content > div:first-child {
+    padding: 16px 14px !important;
+  }
+
+  [data-screen="filedetail"] #detail-content > div:first-child > div > div:first-child {
+    font-size: 18px !important;
+    line-height: 1.4;
+  }
+
+  /* Action buttons — stack vertically full-width */
+  [data-screen="filedetail"] #detail-content > div:nth-child(2) {
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  [data-screen="filedetail"] #detail-content #download-btn,
+  [data-screen="filedetail"] #detail-content #edit-btn,
+  [data-screen="filedetail"] #detail-content #preview-btn {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    margin: 0 !important;
+  }
+
+  /* Metadata grid: 2-col → 1-col */
+  [data-screen="filedetail"] #detail-content > div:nth-child(3) {
+    padding: 16px 14px !important;
+  }
+
+  [data-screen="filedetail"] #detail-content > div:nth-child(3) > div:first-child {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  /* Footer (uploaded_at + UUID): stack on phone */
+  [data-screen="filedetail"] #detail-content > div:nth-child(3) > div:last-child {
+    flex-direction: column !important;
+    gap: 4px !important;
+    align-items: flex-start !important;
+  }
+
+  /* Preview iframe height shorter on phone */
+  [data-screen="filedetail"] #preview-area iframe {
+    height: 500px !important;
+  }
+  /* ====================================================================
+     PHASE E — UPLOAD FORM MOBILE
+     Both single-file mode AND bulk-mode (multi-file table)
+     ==================================================================== */
+
+  [data-screen="upload"] {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  [data-screen="upload"] * {
+    box-sizing: border-box;
+  }
+
+  /* Page header: title + cancel button stacked using .up-header class */
+  [data-screen="upload"] .up-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  [data-screen="upload"] h1 {
+    font-size: 22px !important;
+    text-align: right;
+    margin: 0 !important;
+  }
+
+  [data-screen="upload"] #cancel-btn {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  [data-screen="upload"] h1 {
+    font-size: 22px !important;
+    text-align: right;
+    margin: 0 !important;
+  }
+
+ 
+  /* Drop zone — slightly smaller on mobile */
+  [data-screen="upload"] #drop-zone {
+    padding: 24px 12px !important;
+  }
+
+  [data-screen="upload"] #drop-zone > div:first-child {
+    font-size: 30px !important;
+  }
+
+  [data-screen="upload"] #pick-files-btn {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+  }
+
+  /* Form field rows — single-mode and shared bulk fields */
+  [data-screen="upload"] form label {
+    font-size: 14px !important;
+  }
+
+  [data-screen="upload"] form input[type="text"],
+  [data-screen="upload"] form input[type="date"],
+  [data-screen="upload"] form select,
+  [data-screen="upload"] form textarea {
+    padding: 14px !important;
+    font-size: 16px !important;
+    width: 100% !important;
+  }
+
+  /* The 2-column grid (כיוון + תאריך) → stack on mobile */
+  [data-screen="upload"] form > div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  /* Submit button — full-width, prominent */
+  [data-screen="upload"] #submit-btn {
+    width: 100% !important;
+    padding: 16px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+  }
+
+  /* ===== BULK MODE — file table per-row redesign ===== */
+
+  /* The bulk table header (📂 קבצים שנבחרו) */
+  [data-screen="upload"] #file-table-container > div:first-child > div:first-child {
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* Each file row: 5-column grid → 2-row layout
+     Top row: number + filename + ✕
+     Bottom row: size + tag input full-width */
+  [data-screen="upload"] #file-table-container > div:first-child > div:last-child > div {
+    grid-template-columns: 28px 1fr 36px !important;
+    grid-template-rows: auto auto !important;
+    gap: 6px 8px !important;
+    padding: 10px !important;
+  }
+
+  /* Number cell — top-left */
+  [data-screen="upload"] #file-table-container > div:first-child > div:last-child > div > div:nth-child(1) {
+    grid-row: 1;
+    grid-column: 1;
+    align-self: center;
+  }
+
+  /* Filename — top-middle, spans wide */
+  [data-screen="upload"] #file-table-container > div:first-child > div:last-child > div > div:nth-child(2) {
+    grid-row: 1;
+    grid-column: 2;
+    align-self: center;
+    font-size: 13px !important;
+  }
+
+  /* ✕ remove button — top-right */
+  [data-screen="upload"] #file-table-container > div:first-child > div:last-child > div > button[data-remove-id] {
+    grid-row: 1;
+    grid-column: 3;
+    align-self: center;
+  }
+
+  /* Size — bottom row, small */
+  [data-screen="upload"] #file-table-container > div:first-child > div:last-child > div > div:nth-child(3) {
+    grid-row: 2;
+    grid-column: 1 / 4;
+    font-size: 11px !important;
+    color: #888 !important;
+    text-align: right;
+  }
+
+  /* Tag input — bottom row, full width */
+  [data-screen="upload"] #file-table-container > div:first-child > div:last-child > div > input[data-tag-id] {
+    grid-row: 2;
+    grid-column: 1 / 4;
+    padding: 10px !important;
+    font-size: 14px !important;
+    width: 100% !important;
+  }
+
+  /* "Apply tag to all" panel — stack vertically */
+  [data-screen="upload"] #file-table-container > div:nth-child(2) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  [data-screen="upload"] #file-table-container > div:nth-child(2) > span {
+    text-align: right;
+    font-size: 12px !important;
+  }
+
+  [data-screen="upload"] #bulk-tag-input {
+    padding: 12px !important;
+    font-size: 15px !important;
+  }
+
+  [data-screen="upload"] #apply-tag-all-btn {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* "+ הוסף קבצים נוספים" footer — stack */
+  [data-screen="upload"] #file-table-container > div:nth-child(3) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  [data-screen="upload"] #add-more-files-btn {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  [data-screen="upload"] #total-size-label {
+    text-align: center;
+    font-size: 13px !important;
+  }
+
+  /* Single-file mode strip */
+  [data-screen="upload"] #file-table-container > div[style*="background: #f7f8fa"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  /* ===== Progress UI (during upload) ===== */
+
+  [data-screen="upload"] #progress-panel > div > div:first-child {
+    padding: 14px !important;
+  }
+
+  /* Each file's progress row — stack name + status */
+  [data-screen="upload"] #progress-panel > div > div:last-child > div > div:first-child {
+    grid-template-columns: 24px 1fr auto !important;
+    gap: 8px !important;
+  }
+  /* ====================================================================
+     PHASE F — EDIT FORM MOBILE
+     ==================================================================== */
+
+  [data-screen="fileedit"] {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  [data-screen="fileedit"] * {
+    box-sizing: border-box;
+  }
+
+  /* Page header: title + top cancel button stacked */
+  [data-screen="fileedit"] > div > div:first-child {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  [data-screen="fileedit"] h1 {
+    font-size: 22px !important;
+    text-align: right !important;
+    margin: 0 !important;
+  }
+
+  [data-screen="fileedit"] #cancel-btn {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* Read-only file info banner — adjust padding for mobile */
+  [data-screen="fileedit"] #edit-content > div:first-child {
+    padding: 14px !important;
+  }
+
+  /* Form field rows */
+  [data-screen="fileedit"] form label {
+    font-size: 14px !important;
+  }
+
+  [data-screen="fileedit"] form input[type="text"],
+  [data-screen="fileedit"] form input[type="date"],
+  [data-screen="fileedit"] form select,
+  [data-screen="fileedit"] form textarea {
+    padding: 14px !important;
+    font-size: 16px !important;
+    width: 100% !important;
+  }
+
+  /* The 2-column grid (כיוון + תאריך) → stack on mobile */
+  [data-screen="fileedit"] form > div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  /* Save + bottom cancel buttons — stack vertically full-width */
+  [data-screen="fileedit"] form > div:last-child {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  [data-screen="fileedit"] #save-btn {
+    width: 100% !important;
+    padding: 16px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+  }
+
+  [data-screen="fileedit"] #cancel-btn-2 {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+  }
+
+  /* Success banner: keep it green and centered, just fit on phone */
+  [data-screen="fileedit"] #edit-content > div[style*="background: #e8f5e9"] {
+    padding: 24px 16px !important;
+  }
+
+  [data-screen="fileedit"] #back-to-detail-btn {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+  }
+}

@@ -1,12 +1,13 @@
 ﻿// src/screens/login.js
 // Login screen — Hebrew RTL form, email + password auth against Supabase.
 // Created: 23/04/2026 (Lesson 5)
+// Updated: 26/04/2026 — Lesson 9B Phase B: added data-screen="login" marker for mobile CSS
 
 import { supabase } from '../lib/supabase.js';
 
 export function renderLogin(container) {
   container.innerHTML = `
-    <div style="max-width: 420px; margin: 80px auto; padding: 32px; border: 1px solid #ddd; border-radius: 8px; background: #fff; font-family: 'Heebo', sans-serif;">
+    <div data-screen="login" style="max-width: 420px; margin: 80px auto; padding: 32px; border: 1px solid #ddd; border-radius: 8px; background: #fff; font-family: 'Heebo', sans-serif;">
       <h1 style="font-family: 'Frank Ruhl Libre', serif; font-size: 28px; margin: 0 0 8px; text-align: right;">כניסה למערכת</h1>
       <p style="color: #666; margin: 0 0 24px; text-align: right;">הזן את פרטי הכניסה שלך</p>
 
