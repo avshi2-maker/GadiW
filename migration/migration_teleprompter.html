@@ -3,18 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GadiW Migration Teleprompter v3</title>
+<title>GadiW Migration Teleprompter v4</title>
 <!--
-  GadiW Migration Day Teleprompter v3
-  Updated 28/04/2026: UX polish based on dress-rehearsal feedback.
-  · NEW: Persistent column reference bar (always visible, eliminates counting)
-  · FIX: Column count description (6 navy + 5 green + 1 grey = 12)
-  · NEW: Pass landing cards now show which column this pass affects
-  · NEW: "Row 1=header, Row 2=first data" hints throughout
-  · NEW: Filename pattern shown explicitly in Pass 0 Step 1
-  · NEW: Tab location reminder (BOTTOM of Excel) in Pass 0 Step 2
-  · NEW: Pass dots have explanatory tooltips
-  · STORAGE_KEY bumped to v3 to clear stale state
+  GadiW Migration Day Teleprompter v4
+  Updated 28/04/2026 evening: Polish patch from end-of-Pass-4 dress rehearsal.
+  · FIX #2: Emoji rendering — wrap emoji in span so encoding is explicit
+  · FIX #4: Pass 2 step 4 — replaced row-number references with file-extension references
+  · NEW #5: "Click button, don't press Enter" warning prominent in Pass 0
+  · NEW #1+12: Pass 5 final step expanded with PowerShell TAB-completion +
+              switching to PowerShell + expected dry-run output
+  · STORAGE_KEY bumped to v4 to clear stale v3 state
+
+  Earlier (v3):
+  · Persistent column reference bar (always visible)
+  · Column count description fixed (6+5+1=12)
+  · Pass landing cards show active column
+  · Row 1=header, Row 2=first data hints
+  · Filename pattern in Pass 0 Step 1
+  · Pass dot tooltips
 -->
 <style>
   :root {
@@ -460,7 +466,12 @@
     border-radius: 10px;
     margin-bottom: 8px;
   }
-  .landing-emoji { font-size: 36px; margin-bottom: 6px; }
+  .landing-emoji {
+    font-size: 36px;
+    margin-bottom: 6px;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+    line-height: 1.2;
+  }
   .landing-title { font-size: var(--fs-large); font-weight: 700; margin-bottom: 6px; }
   .landing-body { font-size: var(--fs-body); line-height: 1.5; color: rgba(255,255,255,0.92); margin-bottom: 8px; }
   .landing-target {
@@ -655,7 +666,7 @@
 <div class="app" id="app">
   <div class="header">
     <div class="header-top">
-      <span class="workflow-name" id="workflow-name">GadiW Migration · Excel Filling · v3</span>
+      <span class="workflow-name" id="workflow-name">GadiW Migration · Excel Filling · v4</span>
       <span class="pause-badge" id="pause-badge">⏸ הופסק זמנית</span>
     </div>
     <div class="pass-line">
@@ -803,7 +814,8 @@ var WORKFLOWS = {
             action_he: 'שמור את האקסל עכשיו',
             detail_he: 'לחץ ' + kbd('Ctrl') + '+' + kbd('S') + '. אם נפתח חלון "שמירה כ" — לחץ ' + menu('שמור', 'Save') + ' (פורמט .xlsx).',
             warn_he: '⚠ אם נפתח "Compatibility Checker" — לחץ ' + menu('המשך', 'Continue') + '. שום פורמטים שלך לא ייעלמו.',
-            tip_he: '💡 שמור כל 5 דקות במהלך כל הסשן. Ctrl+S = ההרגל החשוב ביום הזה.'
+            tip_he: '💡 שמור כל 5 דקות במהלך כל הסשן. Ctrl+S = ההרגל החשוב ביום הזה.',
+            danger_he: '⛔ <strong>חשוב לזכור לכל המעברים הבאים:</strong><br>• כדי <strong>למלא תא באקסל</strong> — לחץ קודם על אקסל, אז הקלד, אז ' + kbd('Enter') + '<br>• כדי <strong>לעבור צעד בטלפרומפטר</strong> — לחץ על הכפתור הכחול <strong>"✓ בוצע, הבא →"</strong> בעכבר<br>• <strong>אל תשתמש ב-' + kbd('Enter') + ' כדי לעבור צעד</strong> — אם החלון של Chrome בפוקוס, Enter יעבור צעד ויפסיק את הסשן בשגיאה!'
           }
         ]
       },
@@ -963,16 +975,16 @@ var WORKFLOWS = {
             tag: 'מילוי PDF',
             action_he: 'תייג את כל קבצי ה-.pdf של הלקוח כ-' + lit('חוזה'),
             detail_he: 'בדרך כלל PDF = חוזה (חוזים, נספחים, מסמכים רשמיים).',
+            warn_he: '⚠ <strong>חשוב:</strong> אחרי המיון של מעבר 2, סדר השורות השתנה! אל תסתמך על מספרי שורות מהמעבר הקודם. <strong>סרוק עין על עמודה C (file_name) ומצא את הסיומות .pdf.</strong>',
             substeps_he: [
-              'מצא את ה-PDF הראשון של הלקוח הראשון',
-              'לחץ על תא <strong>H</strong> של אותה שורה',
-              'הקלד ' + lit('חוזה'),
-              'לחץ ' + kbd('Enter'),
-              'לחץ שוב על אותו תא H',
-              kbd('Shift') + ' + לחץ על תא H של ה-PDF האחרון של אותו לקוח',
-              kbd('Ctrl') + '+' + kbd('D')
+              '<strong>סרוק עין</strong> על עמודה C (file_name) — מצא את כל הקבצים שמסתיימים ב-<strong>.pdf</strong>',
+              'תזהה PDF "אמיתיים" (חוזים) — שמות כמו Lease_, NDA_, Contract_, Agreement_',
+              '<strong>הפרד</strong> מ-PDFs שהם בעצם קבלות (Receipt_, Invoice_) — אותם נתייג ב<strong>שלב 7</strong>, לא עכשיו',
+              'לחץ על תא H של ה-PDF הראשון "חוזה אמיתי"',
+              'הקלד ' + lit('חוזה') + ' ולחץ ' + kbd('Enter'),
+              'אם יש PDF חוזים נוספים <strong>רצופים</strong> מאותו לקוח: לחץ שוב על H הראשון, ' + kbd('Shift') + ' + לחץ על H האחרון, ' + kbd('Ctrl') + '+' + kbd('D')
             ],
-            tip_he: '💡 חזור על זה לכל לקוח. בערך 10-15 שניות לכל לקוח.'
+            tip_he: '💡 לדוגמה: אם רואים בעמודה C: Lease_2024.pdf (חוזה), NDA.pdf (חוזה), Receipt_June.pdf (קבלה!) — תייג רק את הראשונים שניים עם חוזה, את Receipt תשאיר לשלב 7.'
           },
           {
             tag: 'מילוי DOCX',
@@ -1197,10 +1209,22 @@ var WORKFLOWS = {
           {
             tag: 'מוכנים!',
             action_he: 'מוכנים להרצת הסקריפט',
-            detail_he: 'הצעד הבא: PowerShell → להריץ את ה-dry-run לוודא הכל.',
-            verify_title_he: 'הפקודה להריץ:',
-            verify_body_he: '<span class="literal">python migrate_to_gadiw.py --sheet gadi_inventory_DDMMYYYY_HHMMSS.xlsx --dry-run</span><br><br>החלף את DDMMYYYY_HHMMSS בחותמת הזמן האמיתית של הקובץ שלך.',
-            tip_he: '🎉 כל הכבוד! <strong>החלק הקשה הסתיים.</strong> ההעלאה היא רק 5-10 דקות של מסך פעולה אוטומטי.'
+            detail_he: 'הצעד הבא: PowerShell → להריץ את ה-dry-run לוודא הכל. הסקריפט בודק את כל השורות אבל <strong>לא מעלה כלום</strong> בהרצת dry-run.',
+            substeps_he: [
+              '<strong>פתח PowerShell</strong> אם לא פתוח. אם פתוח — לחץ עליו עכשיו (לא על Excel ולא על Chrome)',
+              'ודא שאתה בתיקייה הנכונה: ' + lit('cd C:\\dev\\gadiV\\migration'),
+              'ודא ש-venv פעיל: ' + lit('.\\venv\\Scripts\\Activate.ps1') + ' (אם רואה (venv) בתחילת השורה — מעולה)',
+              '<strong>הקלד התחלה:</strong> ' + lit('python migrate_to_gadiw.py --sheet gadi'),
+              '<strong>לחץ ' + kbd('TAB') + ' (טאב)</strong> — PowerShell ישלים אוטומטית את שם הקובץ המלא! לא צריך להקליד את החותמת זמן.',
+              'אחרי TAB יראה: <span class="literal">python migrate_to_gadiw.py --sheet .\\gadi_inventory_28042026_124531.xlsx</span>',
+              'הוסף בסוף את ה-flag: <strong>רווח אז ' + lit('--dry-run') + '</strong>',
+              'לחץ ' + kbd('Enter') + ' להרצה'
+            ],
+            verify_title_he: 'הפקודה הסופית להרצה:',
+            verify_body_he: '<span class="literal">python migrate_to_gadiw.py --sheet gadi[TAB] --dry-run</span><br><br>זוכר: <strong>TAB</strong> זה הקסם של PowerShell — שם הקובץ ימולא אוטומטית. <strong>אל תקליד DDMMYYYY_HHMMSS ידנית.</strong>',
+            tip_he: '💡 <strong>מה לצפות בפלט:</strong><br>• "Logging in as avshi2@gmail.com..." → תקליד סיסמה ' + lit('GadiW2026!') + '<br>• "Fetched X clients from DB..." ← מציג כמה לקוחות ב-DB<br>• "Validating row 1... ✓" "row 2... ✓" וכו\' לכל שורה<br>• <strong>בסוף:</strong> "DRY RUN — would upload N rows" = הצלחה! ✅<br>• אם רואה ✗ אדום או "ROWS NEED REVIEW" — יש בעיה בנתונים, חזור לאקסל ותקן',
+            warn_he: '⚠ אחרי שה-dry-run עובר בהצלחה: הרץ <strong>שוב את אותה פקודה בלי --dry-run</strong> כדי להעלות באמת. הסקריפט יבקש אישור (y/n).',
+            danger_he: '⛔ <strong>אם dry-run נכשל:</strong> <strong>אל תרוץ ללא --dry-run!</strong> תקן בעיות באקסל קודם, אז dry-run שוב. רק כשהדריי-ראן עובר 100% — אז להעלות באמת.'
           }
         ]
       }
@@ -1210,7 +1234,7 @@ var WORKFLOWS = {
 };
 
 // STATE
-var STORAGE_KEY = 'gadiw_teleprompter_state_v3';
+var STORAGE_KEY = 'gadiw_teleprompter_state_v4';
 
 function defaultState() {
   return {
@@ -1367,7 +1391,7 @@ function renderStep(step, pass, showLanding) {
   if (showLanding) {
     var l = pass.landing;
     html += '<div class="landing">';
-    html +=   '<div class="landing-emoji">' + l.emoji + '</div>';
+    html +=   '<div class="landing-emoji"><span style="font-family: \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif;">' + l.emoji + '</span></div>';
     html +=   '<div class="landing-title">' + l.title_he + '</div>';
     html +=   '<div class="landing-body">' + l.body_he + '</div>';
     if (l.target_he) {
