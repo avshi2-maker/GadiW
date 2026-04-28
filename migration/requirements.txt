@@ -1,0 +1,14 @@
+# GadiW Migration Script Dependencies
+# Created: 27/04/2026 (Lesson 9C Phase A)
+
+# Excel reading and writing
+openpyxl==3.1.2
+
+# HTTP requests to Supabase REST API
+requests==2.31.0
+
+# Loading .env files (Supabase credentials)
+python-dotenv==1.0.0
+
+# Pretty terminal output (progress bars, colored text)
+rich==13.7.0

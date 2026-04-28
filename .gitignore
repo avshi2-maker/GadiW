@@ -62,3 +62,14 @@ temp/
 # ─── Uploaded files that should not be versioned ───
 uploads/private/
 test_audio/
+# Python migration script
+migration/venv/
+migration/.env
+migration/__pycache__/
+migration/*.pyc
+migration/migration_log_*.txt
+migration/gadi_inventory_*.xlsx
+migration/client_review_*.xlsx
+migration/test_files/
+
+

@@ -5,7 +5,83 @@
 >
 > The point: get ideas OUT of your head and INTO a system you trust.
 > So you can sleep. So you can focus. So you can ship.
+### 27/04/2026 — Migration Day Privacy Framing (Lesson 10 critical)
 
+**Concern raised by Avshi during Lesson 9C:** Migration day exposes Gadi's filenames to Avshi. Even though document CONTENTS are never read, filenames in a legal practice can reveal client + matter (e.g., "Cohen_divorce_settlement.pdf").
+
+**Mitigations to implement before migration day:**
+
+1. **Sign mutual NDA** (1 page Hebrew + English) before migration. Standard confidentiality + commitment to delete all working files. Gadi-friendly because lawyers understand NDAs.
+
+2. **Avshi commits in writing:**
+   - All Excel files deleted from Avshi's laptop after migration day
+   - Migration logs deleted after migration day  
+   - No copy of inventory taken
+   - Test files deleted
+   - Migration script archived but never re-run on Gadi's data
+
+3. **Show Gadi the deletion live** — at end of migration day, run `del *.xlsx *.txt` while he watches. Visible reassurance.
+
+4. **Frame the script as it actually is:** "Reads filenames only, never opens documents. Like reading the labels on your filing cabinet drawers without opening any drawer."
+
+5. **Lesson 10 onboarding script** (Hebrew, prepared in advance) explaining migration day mechanics so Gadi knows what to expect BEFORE day-of.
+
+**Why this matters:** Gadi's trust in the system is THE critical success factor. Phase 1 is "trust-building" before any AI features. One privacy mishap on day 1 = project failure. One thoughtful framing = years of partnership.
+
+**Time to implement:** 30 min NDA drafting + 30 min onboarding script = 1 hour added to Lesson 10.
+
+### 27/04/2026 — Excel multi-pass speed-fill workflow for migration day (Lesson 10 onboarding)
+
+**Critical for migration day with Gadi:** Excel sort + Ctrl+D fill-down is the ONLY way to handle 1,000+ files in reasonable time. Filling row-by-row is impossible (15+ hours).
+
+**Multi-pass workflow Avshi will use sitting next to Gadi:**
+
+**Pass 1 — Sort by folder_hint (column E):**
+- All Cohen files group together → bulk-fill client_name=יעקב כהן for all rows in that group (Ctrl+D)
+- Repeat for each client folder
+- Result: column G (client_name) is FULLY filled
+
+**Pass 2 — Re-sort by file extension or filename pattern:**
+- Sort by file_path (column B) ascending → groups by extension within each client
+- All .pdf for Cohen → bulk-fill doc_tag=חוזה (typical for contracts)
+- All .docx for Cohen → bulk-fill doc_tag=מכתב (typical for letters)
+- All .jpg for Cohen → bulk-fill doc_tag=תעודה (typical for evidence)
+- Result: column H (doc_tag) is mostly filled — scan for outliers
+
+**Pass 3 — Sort by client_name + filename pattern to fill direction:**
+- Letters with words like "מבנק", "מאת", "from" → bulk-fill direction=התקבל
+- Outgoing letters with "אל", "to" → direction=נשלח
+- Default for contracts/internal docs → direction=פנימי
+- Result: column I (direction) fully filled
+
+**Pass 4 — Spot-check + ask Gadi the edge cases:**
+- Scan column-by-column for blank cells (filter by blanks)
+- Fix anything wrong with Gadi's input ("Gadi — is this Cohen or Levi case?")
+- This is where Gadi adds value: he KNOWS which file belongs to which matter
+
+**Pass 5 (optional) — Sort back by row_id (column A) ascending to restore original order before saving.** Not strictly necessary — script doesn't care about row order — but cosmetically nicer for review.
+
+**Save Excel (Ctrl+S) → close Excel → run migrate_to_gadiw.py.**
+
+**IMPORTANT: All sorting + filling happens IN ONE FILE — the original inventory Excel.** Do NOT copy-paste between files. The script identifies rows by `row_id` (column A) and Excel row number, not by their position in the sort order. Sorting freely is safe.
+
+**Time savings:**
+- Naive row-by-row: 15+ hours for 1,000 files
+- With multi-pass sort + bulk-fill: 3-4 hours for 1,000 files
+
+**Document this in Lesson 10 cheat sheet so Gadi sees the workflow before day-of and isn't intimidated by 1,000 rows. Show him a 5-minute video or screen-share demo of the multi-pass technique.**
+
+**Edge case to prepare for:** Some files won't fit any pattern. Have Gadi answer them in real-time during migration day. Don't try to pre-decide everything in your head before the session.
+
+### 27/04/2026 — Add Task Manager close to Bible Section 10 (Lesson 10 polish)
+
+During test walkthrough, Avshi hit the classic Excel file-lock issue (Excel still running in background even after document closed). Bible already mentions "close Excel completely" but should explicitly add:
+
+- Task Manager → End task EXCEL.EXE
+- PowerShell command: `taskkill /F /IM EXCEL.EXE`
+- Verify with: `Get-Process EXCEL -ErrorAction SilentlyContinue`
+
+This adds 15 lines to Section 10.3. Add when revising Bible v2 before migration day.
 ---
 
 ## How to use this file
@@ -21,13 +97,10 @@
 
 ## NEW (review next session)
 
-- 23/04/2026 — Hebrew filename handling for GadiW: decide between UUID storage keys (recommended, industry standard) vs Python rename-to-English script vs raw Hebrew with careful URL encoding. Original Hebrew name stored in documents.file_name column regardless. **STATUS:** Resolved in Lesson 7 — chose ASCII-safe storage path with original Hebrew preserved in file_name column.
 - 22/04/2026 — Comet/Gemini research files on OneDrive — cherry-pick for Phase 2+ (template/data model design)
-- 22/04/2026 — Gadi replies tomorrow after Independence Day holiday
 - 22/04/2026 — Develop ready-made Excel sheet for calculating Avshi's developing hours CRM with Claude bot
 - 22/04/2026 — Download from Comet all files to be tested/used in Gadi's CRM
 - 23/04/2026 — app_config table with API keys is in OLD project (vmcipofovheztbjmhwsl), not Gadi_W_CRM. Need to recreate in Phase 3+
-- 26/04/2026 — Build Gadi mobile app that will sync with Gadi CRM files/voice/pictures [use beni_pocket android as sample]
 
 ---
 
@@ -41,11 +114,12 @@
 - [SCHEDULED-P1] Organize by client (link to clients table) and matter ✅ Lesson 7
 - [SCHEDULED-P1] Gadi-only auth (Supabase email + TOTP) ✅ Lesson 5
 - [SCHEDULED-P1] RLS policies on storage bucket (vendor cannot read) ✅ Lesson 4
-- [SCHEDULED-P1] Mobile read-only view ⏳ Lesson 9B
+- [SCHEDULED-P1] Mobile responsive view ✅ Lesson 9B
 - [SCHEDULED-P1] Bulk upload (in-app) ✅ Lesson 9D
-- [SCHEDULED-P1] Document edit screen ⏳ Lesson 9E
+- [SCHEDULED-P1] Document edit screen ✅ Lesson 9E
 - [SCHEDULED-P1] Python USB migration script ⏳ Lesson 9C
 - [SCHEDULED-P1] Deploy to GitHub Pages ⏳ Lesson 10
+- [SCHEDULED-P1] Gadi's logo branding ⏳ Lesson 10 (see PARKED entry below for details)
 
 ### Phase 2 — Templates with Gadi's writing style
 - [SCHEDULED-P2] Collect 20-30 of Gadi's existing letters as training samples
@@ -68,40 +142,7 @@
 - [SCHEDULED-P5] Replace paper handbook
 - [SCHEDULED-P5] Link to hearings table
 - [SCHEDULED-P5] Court deadline reminders
-### 26/04/2026 — Gadi's Logo Branding (Lesson 9B or 10 polish — BEFORE beta)
 
-**Source:** Avshi captured logo image during Lesson 9E session. File: 
-`גד ויספלד · משרד עורכי דין ונוטריון`. Clean Hebrew typography, navy text on cream/yellow background.
-
-**Why this matters:**
-- Trust-building for Gadi (his name on his app = his tool, not "some software")
-- Lawyers are image-conscious about their practice presentation
-- Visible branding = "this is real, professional, mine"
-
-**Where to add the logo:**
-1. **Login screen** — large logo above the email/password fields. First touchpoint.
-2. **File list header** — small logo next to "המסמכים שלי" (replaces or accompanies "avshi2@gmail.com" subtitle).
-3. **Edit/upload form headers** — small logo top-left.
-4. **Document edit success banner** — small logo as part of the green confirmation card. Reinforces "your archive saved your document."
-
-**Technical implementation:**
-1. Save logo as `public/gadi-logo.png` (or .svg if vectorized)
-2. Reference via `<img src="/gadi-logo.png" alt="גד ויספלד · משרד עורכי דין ונוטריון" />`
-3. Standard sizes:
-   - Login screen: 280px wide
-   - List header: 120px wide
-   - Form headers: 100px wide
-   - Success banner: 80px wide
-
-**When to build:**
-- Option A — Lesson 9B (mobile responsive lesson — natural place to touch all UI surfaces)
-- Option B — Lesson 10 (deploy + onboarding lesson — final polish before showing Gadi)
-- **Recommendation: Lesson 10.** Logo is a "wow" moment best saved for the final reveal.
-
-**Asset needed from Gadi:**
-- Higher resolution logo (PNG 1000px+ or ideally SVG)
-- Confirmation he wants to use this exact logo (vs a slight variant)
-- Avshi to ask Gadi during onboarding: "send me your logo file for the app branding"
 ---
 
 ## PARKED (good ideas, NOT now)
@@ -146,8 +187,6 @@
 ### 26/04/2026 — Full Client Intake Form (Phase 2/3 spec)
 
 **Source:** customer_intake.xlsx provided by Avshi (53 fields across 9 categories).
-
-**Categorization (which Phase each category belongs to):**
 
 **Already covered by existing `clients` table (Phase 1, no work needed):**
 - מספר_לקוח → client_number ✓
@@ -271,21 +310,6 @@ User searches "mp4" → clicks result → goes to detail → clicks back to list
 
 **Decision: PARKED until Phase 2.** Update STATUS.md when Phase 1 deploys to remember this is "first Phase 2 priority."
 
-**Problem identified during 9D testing:** When multiple filters are active simultaneously (search box + tag + direction + client), users get "no results" but can't easily see which filter is killing the search. AND-logic is correct but invisible.
-
-**Decision:** AND-logic stays (OR would flood with irrelevant results).
-
-**Solution:** Add active-filter pills above the result count showing each active filter as a removable chip:
-- 🔎 פעילים: [חיפוש: mp4 ✕] [תיוג: prompt ✕] [כיוון: פנימי ✕] [לקוח: חברת בנייה ✕]
-- Click ✕ on individual pill → removes only that filter, keeps others
-- "נקה הכל" button only when 2+ filters active
-
-**Where:** Build during Lesson 9B (mobile responsive lesson) where filter UX gets touched anyway.
-
-**Time:** ~30 min code + test.
-
-**Why deferred:** Lesson 9D was functionally complete; pills are an enhancement that doesn't block shipping.
-
 ---
 
 ### 26/04/2026 — Storage Object Deletion Protection (technical note)
@@ -295,8 +319,6 @@ Supabase added `storage.protect_delete()` trigger that blocks SQL DELETEs from `
 Our `deleteOrphanStorageObject()` function in uploadForm.js already uses the API correctly. No code change needed.
 
 **Implication for Lesson 9C Python migration:** orphan cleanup MUST use Storage API, not raw SQL. Will document in script.
-
-The 3 leftover storage files from Lesson 6 placeholder seeds are not worth deleting — they consume <1KB of storage and have no real impact.
 
 ---
 
@@ -316,14 +338,52 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 - BUT: low priority since real-world Wi-Fi failures are rare in stable home/office networks
 - Park as "background reconciliation" enhancement for after Phase 1 ship
 
-## 26/04/2026 — Audit Trail for Document Edits (Phase 2 nice-to-have)
+---
+
+### 26/04/2026 — Audit Trail for Document Edits (Phase 2 nice-to-have)
 
 **Why parked:** Gadi has no compliance requirement that mandates audit trail for self-edits in Phase 1. He's the only user. SOC2/HIPAA compliance kicks in only when this becomes multi-tenant SaaS.
 
 **When to revisit:** When Phase 2 multi-user (wife as back-office) ships, OR when first paying customer wants compliance certifications.
 
 **Design (when needed):** Trigger-based table `documents_audit` with: id, doc_id, edited_by, edited_at, field_name, old_value, new_value. UI: detail screen tab "היסטוריית עריכות" showing changes.
-## 26/04/2026 — GadiW Pocket Mobile Companion App (Phase 2 — POST-TRIP)
+
+---
+
+### 26/04/2026 — Gadi's Logo Branding (Lesson 10 polish — BEFORE beta)
+
+**Source:** Avshi captured logo image during Lesson 9E session. File: `גד ויספלד · משרד עורכי דין ונוטריון`. Clean Hebrew typography, navy text on cream/yellow background.
+
+**Why this matters:**
+- Trust-building for Gadi (his name on his app = his tool, not "some software")
+- Lawyers are image-conscious about their practice presentation
+- Visible branding = "this is real, professional, mine"
+
+**Where to add the logo:**
+1. **Login screen** — large logo above the email/password fields. First touchpoint.
+2. **File list header** — small logo next to "המסמכים שלי" (replaces or accompanies "avshi2@gmail.com" subtitle).
+3. **Edit/upload form headers** — small logo top-left.
+4. **Document edit success banner** — small logo as part of the green confirmation card.
+
+**Technical implementation:**
+1. Save logo as `public/gadi-logo.png` (or .svg if vectorized)
+2. Reference via `<img src="/gadi-logo.png" alt="גד ויספלד · משרד עורכי דין ונוטריון" />`
+3. Standard sizes:
+   - Login screen: 280px wide
+   - List header: 120px wide
+   - Form headers: 100px wide
+   - Success banner: 80px wide
+
+**When to build:** Lesson 10 (deploy + onboarding lesson — final polish before showing Gadi). Logo is a "wow" moment best saved for the final reveal.
+
+**Asset needed from Gadi:**
+- Higher resolution logo (PNG 1000px+ or ideally SVG)
+- Confirmation he wants to use this exact logo (vs a slight variant)
+- Avshi to ask Gadi during onboarding: "send me your logo file for the app branding"
+
+---
+
+### 26/04/2026 — GadiW Pocket Mobile Companion App (Phase 2 — POST-TRIP)
 
 **Source pattern:** Beni Pocket (avshi2-maker, Android-deployed, working perfectly).
 **Reference file:** Avshi has the full index.html captured in this session.
@@ -360,27 +420,12 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 **Estimated build time:** 6-8 hours of focused work. Worth a dedicated lesson series (Lessons 11-14).
 
 **Decision:** PARKED. Do NOT build before Phase 1 deploy. Reference Beni Pocket index.html as starting template.
-## 26/04/2026 — BUG to fix before ship: edit→detail navigation console error
 
-**Symptom:** Edit a doc → click 💾 שמור → green success card → 4-sec auto-navigate to detail screen → screen shows correctly with new data → BUT console shows red error:
-`Uncaught (in promise) TypeError: Cannot read properties of null (reading 'addEventListener') at renderFileDetail (fileDetail.js:175)`
-
-**User-visible impact:** ZERO. Data saves, screen renders, error is console-only.
-
-**Likely cause:** Stale event listener from previous render trying to attach to elements that no longer exist after green-banner replaced the form DOM.
-
-**To debug tomorrow:**
-1. Open `src/screens/fileDetail.js` line 175
-2. Find the `addEventListener` call there
-3. Check if the element it targets actually exists at that moment
-4. Likely fix: wrap in a null check `if (someBtn) someBtn.addEventListener(...)` OR ensure renderFileDetail isn't called twice
-
-**Time estimate:** 10-15 min fix. Must do before deploy (Lesson 10).
 ---
 
 ### 26/04/2026 — Upload Form Mobile Header Clipping (Phase 2 cosmetic)
 
-**Problem:** On mobile (Android Chrome <768px), the upload form's header title "העלאת מסמך חדש" is clipped on the right edge — visible as "לאת מסמך חדש". The cancel button stays in the top-left corner instead of stacking below.
+**Problem:** On mobile (Android Chrome <768px), the upload form's header title "העלאת מסמך חדש" is clipped on the right edge. The cancel button stays in the top-left corner instead of stacking below.
 
 **Tried during Lesson 9B Phase E (26/04/2026):**
 1. External mobile.css with `[data-screen="upload"] .up-header { flex-direction: column }` — didn't apply
@@ -389,13 +434,7 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 
 **Likely root cause (best guess):** The form's outer `<div>` has inline `style="max-width: 700px; margin: 40px auto;"` which the cascade isn't overriding cleanly on mobile. RTL direction + flex justify-content:space-between pushes the title outside the viewport on the right side.
 
-**User-visible impact:** Cosmetic only.
-- ✅ Form is FULLY FUNCTIONAL — drop zone works, file picker works, bulk table works, single-file mode works, validations work, progress UI works, retry works
-- ✅ ביטול button is still tappable and works
-- ❌ Title is half-clipped — Gadi can still understand the screen ("העלאת מסמך" partially visible is enough context)
-- ❌ Looks unprofessional but not broken
-
-**Why parked:** Lesson 9B is about responsive foundations, not pixel-perfection. The form ships as functionally complete. Cosmetic header polish is not worth blocking the trip deadline (14 days).
+**User-visible impact:** Cosmetic only. Form is FULLY FUNCTIONAL. ביטול button still tappable. Title is half-clipped but Gadi can still understand the screen.
 
 **To fix in Phase 2 polish lesson:**
 1. Refactor uploadForm.js header to NOT use `flex justify-content: space-between` 
@@ -403,9 +442,8 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 3. Or: replace inline `style=` attributes with class-based styling so the cascade works as expected
 4. Test on real Android device (DevTools emulation may not match exactly)
 
-**Time estimate when fixing:** 30 min (refactor + test)
+**Time estimate when fixing:** 30 min.
 
-**Decision:** PARKED — visible flaw, but not a ship-blocker. Document the limitation in Lesson 10 onboarding so Gadi isn't surprised on his phone.
 ---
 
 ### 26/04/2026 — Mobile Bulk File Row Text Clipping (Phase 2 cosmetic)
@@ -414,17 +452,9 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 
 **Root cause:** Same family as upload header bug — inline `style="..."` attributes (text-overflow:ellipsis, white-space:nowrap) inside dynamically-generated HTML have higher specificity than `@media (max-width: 768px)` rules trying to redistribute the layout.
 
-**User-visible impact:** Cosmetic only.
-- ✅ Bulk upload functionality is fully working (3 files uploaded successfully in test)
-- ✅ Tag inputs visible and tappable
-- ✅ ✕ remove buttons work
-- ✅ Total size shown
-- ❌ Filenames truncated to 2-3 chars on mobile bulk table only
-- Single-file mode shows filename correctly
+**User-visible impact:** Cosmetic only. Bulk upload functionality is fully working. Tag inputs visible and tappable. ✕ remove buttons work. Total size shown. Single-file mode shows filename correctly.
 
 **Phase 2 fix:** Refactor the bulk file row HTML to NOT use inline styles. Move all styling to CSS classes. Then media queries can override cleanly. ~45 min refactor.
-
-**Why parked:** Lesson 9B ships responsive foundations. Cosmetic polish blocks no functionality.
 
 ---
 
@@ -445,6 +475,51 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 **Why parked:** Functionality works correctly — only the visual feedback is unclear. Document in Lesson 10 onboarding so Gadi knows the click works even if not obvious.
 
 **Time estimate:** 20 min fix in Phase 2 polish lesson.
+### 28/04/2026 — Gadi's Permanent CRM Tutor + Voice Assistant (Phase 2.5 / Phase 4)
+
+**Source:** Avshi's brainstorm during Lesson 9C teleprompter discussion (28/04/2026).
+
+**Vision:** Always-on-top assistant inside GadiW that guides Gadi step-by-step through any CRM action (uploading, searching, filing, hearings, etc.). Two evolution stages:
+
+**Stage A (Phase 2.5 — text only, ~6 months after Phase 1 ships):**
+- Floating sidebar inside GadiW showing "what to do next" for whatever Gadi clicks
+- Text-only Hebrew instructions, beautifully formatted
+- Confidence builder: lets Gadi run the FULL CRM solo without forgetting steps
+- Critical context: Gadi is a "one man lawyer" with no partner — won't trust a junior associate, but WILL trust a tool
+- Avshi's role here: tutor designer, not threat (relationship is buddies, not legal competition)
+
+**Stage B (Phase 4 — voice assistant, ~12+ months after Phase 1 ships):**
+- ElevenLabs Hebrew TTS — soft professional woman voice
+- Reads instructions aloud as Gadi works
+- Allows hands-free workflow during stress moments
+- Reuses voice patterns from existing TCM clinical assistant work
+
+**Why deferred (NOT NOW):**
+1. Gadi explicitly afraid of AI in Phase 1 — voice assistant pre-trust = scares him away
+2. ElevenLabs sends data offshore — privacy concern for lawyer tool
+3. ElevenLabs ~$5-22/month subscription cost
+4. Scope: would add 2-3 weeks of work, blowing trip deadline (May 10)
+5. Build the right thing only after Gadi tells you what he ACTUALLY needs (not what we imagine)
+
+**Gating decision: do NOT build until Gadi himself asks for guidance / voice features. Even Stage A needs his explicit request after 2+ months of usage.**
+
+**Reuse opportunity:** Same architecture could serve Beni CRM, TCM clinic, and any lawyer who joins as 2nd customer in Phase 6. This is a "horizontal feature" — build once, deploy everywhere.
+
+**Estimated total build time when activated:** Stage A = 8-12 hours. Stage B = 12-20 hours.
+
+**For now:** Build a SIMPLE migration-day-only teleprompter (Avshi's tool, not Gadi's, used once on migration day). Park the bigger vision until Gadi himself signals readiness.
+### v4 polish queue (collected during dress rehearsal 28/04/2026)
+
+1. **PowerShell command friendliness** — Pass 5 final step "מוכנים!"
+   - Current: shows `python migrate_to_gadiw.py --sheet gadi_inventory_DDMMYYYY_HHMMSS.xlsx --dry-run`
+   - User has to mentally substitute placeholders
+   - FIX: Add explicit substep showing TAB auto-completion technique:
+     "Type `python migrate_to_gadiw.py --sheet gadi` then press TAB — PowerShell auto-completes full filename"
+   - Add as new step before final celebration card
+   - Also explain the timestamp meaning (DDMMYYYY = day-month-year, HHMMSS = hour-min-sec) for context
+
+[More to add as we discover them...]
+
 ---
 
 ### Multi-user / team features
@@ -534,6 +609,15 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 - [TRASHED 24/04/2026] **getSession() hang investigation**
   - Reason: Resolved in Lesson 6.5 — root cause = SDK navigator.locks bug. Fix: downgrade to 2.39.8 + REST fetch pattern project-wide.
 
+- [TRASHED 23/04/2026] **Hebrew filename handling decision (UUID vs Python rename vs raw Hebrew)**
+  - Reason: Resolved in Lesson 7 — chose ASCII-safe storage path (timestamp + random suffix + ASCII extension) with original Hebrew preserved in `documents.file_name` column. Working in production.
+
+- [TRASHED 27/04/2026] **BUG: edit→detail navigation console error (fileDetail.js line 175)**
+  - Reason: Fixed during Lesson 9B on 26/04/2026 — added defensive null-checks + scoped queries to detailContent. No more red console errors after edit→save→navigate flow.
+
+- [TRASHED 22/04/2026] **Gadi replies tomorrow after Independence Day holiday**
+  - Reason: Calendar note, not an idea. Removed.
+
 ---
 
 ## REVIEW LOG
@@ -542,7 +626,8 @@ The 3 leftover storage files from Lesson 6 placeholder seeds are not worth delet
 |---|---|---|
 | 21/04/2026 | Initial creation | Established phases, captured all known ideas from Day 1 + Day 2 |
 | 26/04/2026 | Reorganization after Lessons 9A + 9D | Consolidated duplicate USB strategy; merged scattered Phase 2 intake form notes; moved TRASHED back to end; updated SCHEDULED Phase 1 with completion checkmarks |
+| 27/04/2026 | Morning cleanup before Lesson 9C | Fixed misplaced Logo entry (was under Phase 5 Calendar, moved to PARKED). Removed duplicate Filter UX content. Added missing `---` separators. Promoted resolved bug + filename-handling note from PARKED to TRASHED. Confirmed all entries use `### ` heading style. |
 
 ---
 
-*Last updated: 26 April 2026 · End of Lesson 9D — Reorganized for clarity*
+*Last updated: 27 April 2026 · Morning cleanup before Lesson 9C — all entries properly positioned*

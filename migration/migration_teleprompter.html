@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GadiW Migration Teleprompter v3</title>
+<!--
+  GadiW Migration Day Teleprompter v3
+  Updated 28/04/2026: UX polish based on dress-rehearsal feedback.
+  · NEW: Persistent column reference bar (always visible, eliminates counting)
+  · FIX: Column count description (6 navy + 5 green + 1 grey = 12)
+  · NEW: Pass landing cards now show which column this pass affects
+  · NEW: "Row 1=header, Row 2=first data" hints throughout
+  · NEW: Filename pattern shown explicitly in Pass 0 Step 1
+  · NEW: Tab location reminder (BOTTOM of Excel) in Pass 0 Step 2
+  · NEW: Pass dots have explanatory tooltips
+  · STORAGE_KEY bumped to v3 to clear stale state
+-->
+<style>
+  :root {
+    --navy: #1F3A5F;
+    --navy-deep: #0d2747;
+    --navy-soft: #2E5085;
+    --cream: #FFF8E7;
+    --paper: #FDFBF5;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --ink-faint: #888;
+    --rule: #E8E0CF;
+    --green: #2E7D32;
+    --green-soft: #C8E6C9;
+    --amber: #E65100;
+    --amber-soft: #FFE0B2;
+    --rose: #B71C1C;
+    --rose-soft: #FFCDD2;
+    --blue-soft: #E3F2FD;
+    --purple-soft: #F3E5F5;
+    --auto-blue: #1F3A5F;
+    --human-green: #2E7D32;
+    --script-grey: #757575;
+    --shadow-soft: 0 8px 24px rgba(31, 58, 95, 0.12);
+    --fs-tiny: 11px;
+    --fs-small: 14px;
+    --fs-body: 16px;
+    --fs-action: 22px;
+    --fs-large: 28px;
+    --fs-huge: 36px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: linear-gradient(135deg, var(--paper) 0%, var(--cream) 100%);
+    font-family: 'Heebo', 'Frank Ruhl Libre', 'Segoe UI', Tahoma, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 14px;
+  }
+
+  .app {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 14px;
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    border: 1px solid var(--rule);
+    min-height: 0;
+  }
+
+  .header {
+    background: var(--navy);
+    color: white;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .workflow-name {
+    font-size: var(--fs-small);
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.5px;
+  }
+
+  .pause-badge {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: var(--fs-tiny);
+    font-weight: 500;
+    display: none;
+    align-items: center;
+    gap: 6px;
+  }
+  .pause-badge.is-paused {
+    display: inline-flex;
+    background: var(--amber);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .pass-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .pass-title-he {
+    font-size: var(--fs-large);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .pass-counter {
+    font-size: var(--fs-small);
+    color: rgba(255,255,255,0.7);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .progress-track {
+    height: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-soft), white);
+    border-radius: 3px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px rgba(255,255,255,0.4);
+  }
+
+  /* ============================================================
+     COLUMN REFERENCE BAR — always visible above step body
+     ============================================================ */
+  .col-ref {
+    background: white;
+    border-bottom: 1px solid var(--rule);
+    padding: 8px 14px;
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-start;
+    align-items: center;
+    direction: ltr; /* English column letters flow LTR */
+  }
+
+  .col-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    font-size: var(--fs-tiny);
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .col-chip-letter {
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    color: white;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: var(--fs-tiny);
+  }
+  .col-chip-name {
+    font-family: 'Heebo', sans-serif;
+    direction: ltr;
+  }
+
+  /* Three category styles for column chips */
+  .col-chip.cat-auto {
+    background: rgba(31, 58, 95, 0.08);
+    border-color: rgba(31, 58, 95, 0.2);
+    color: var(--auto-blue);
+  }
+  .col-chip.cat-auto .col-chip-letter { background: var(--auto-blue); }
+
+  .col-chip.cat-human {
+    background: rgba(46, 125, 50, 0.1);
+    border-color: rgba(46, 125, 50, 0.3);
+    color: var(--human-green);
+  }
+  .col-chip.cat-human .col-chip-letter { background: var(--human-green); }
+
+  .col-chip.cat-script {
+    background: rgba(117, 117, 117, 0.1);
+    border-color: rgba(117, 117, 117, 0.3);
+    color: var(--script-grey);
+  }
+  .col-chip.cat-script .col-chip-letter { background: var(--script-grey); }
+
+  /* Highlight active column for current pass */
+  .col-chip.is-active {
+    box-shadow: 0 0 0 2px var(--amber);
+    transform: scale(1.05);
+    background: var(--amber-soft) !important;
+    border-color: var(--amber) !important;
+    color: var(--ink) !important;
+  }
+  .col-chip.is-active .col-chip-letter { background: var(--amber) !important; }
+
+  .step-body {
+    flex: 1;
+    padding: 18px 22px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--paper);
+  }
+
+  .step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--rule);
+  }
+
+  .step-counter {
+    font-size: var(--fs-small);
+    font-weight: 600;
+    color: var(--navy);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .step-tag {
+    font-size: var(--fs-tiny);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+
+  .step-action {
+    font-size: var(--fs-action);
+    line-height: 1.5;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .step-detail {
+    font-size: var(--fs-body);
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+
+  .substeps {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 4px 0;
+  }
+  .substeps ol {
+    list-style: none;
+    counter-reset: substep;
+    padding: 0;
+    margin: 0;
+  }
+  .substeps li {
+    counter-increment: substep;
+    position: relative;
+    padding-right: 38px;
+    padding-left: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    font-size: var(--fs-body);
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .substeps li::before {
+    content: counter(substep);
+    position: absolute;
+    right: 0;
+    top: 6px;
+    width: 26px;
+    height: 26px;
+    background: var(--navy);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fs-tiny);
+    font-weight: 700;
+  }
+  .substeps li + li {
+    border-top: 1px dashed var(--rule);
+    margin-top: 4px;
+  }
+
+  .literal {
+    display: inline-block;
+    background: var(--blue-soft);
+    color: var(--navy-deep);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1em;
+    border: 1px solid rgba(31, 58, 95, 0.15);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: all;
+    margin: 0 2px;
+  }
+  .literal:hover {
+    background: var(--navy);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(31, 58, 95, 0.3);
+  }
+  .literal.copied {
+    background: var(--green);
+    color: white;
+  }
+
+  .menu-he {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--purple-soft);
+    border: 1px solid #ce93d8;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #4A148C;
+    font-size: 0.95em;
+    margin: 0 2px;
+  }
+
+  .menu-en {
+    display: inline-block;
+    padding: 1px 6px;
+    background: white;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.85em;
+    color: var(--ink-faint);
+    direction: ltr;
+    margin: 0 2px;
+  }
+
+  .kbd {
+    display: inline-block;
+    padding: 2px 8px;
+    background: white;
+    border: 1px solid var(--rule);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.85em;
+    color: var(--navy);
+    font-weight: 600;
+    margin: 0 1px;
+  }
+
+  /* Cell ref — like G2, H4, etc. */
+  .cell {
+    display: inline-block;
+    background: var(--amber-soft);
+    color: var(--ink);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    font-size: 1em;
+    border: 1px solid var(--amber);
+    margin: 0 2px;
+  }
+
+  .verify {
+    background: var(--green-soft);
+    border-right: 4px solid var(--green);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-top: 4px;
+  }
+  .verify-title {
+    font-size: var(--fs-small);
+    font-weight: 700;
+    color: #1B5E20;
+    margin-bottom: 6px;
+  }
+  .verify-body {
+    font-size: var(--fs-small);
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .tip {
+    background: var(--blue-soft);
+    border-right: 4px solid #1976D2;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: var(--fs-small);
+    color: var(--ink);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+  .warn {
+    background: var(--amber-soft);
+    border-right: 4px solid var(--amber);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: var(--fs-small);
+    color: var(--ink);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+  .danger {
+    background: var(--rose-soft);
+    border-right: 4px solid var(--rose);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: var(--fs-small);
+    color: var(--ink);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+  .tip strong, .warn strong, .verify strong, .danger strong { color: var(--navy-deep); }
+
+  .landing {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
+    color: white;
+    padding: 18px 20px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .landing-emoji { font-size: 36px; margin-bottom: 6px; }
+  .landing-title { font-size: var(--fs-large); font-weight: 700; margin-bottom: 6px; }
+  .landing-body { font-size: var(--fs-body); line-height: 1.5; color: rgba(255,255,255,0.92); margin-bottom: 8px; }
+  .landing-target {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    font-size: var(--fs-small);
+    color: white;
+    border-right: 3px solid var(--amber);
+  }
+
+  .complete-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+    gap: 16px;
+  }
+  .complete-icon { font-size: 80px; line-height: 1; }
+  .complete-title { font-size: 32px; font-weight: 700; color: var(--navy); }
+  .complete-message { font-size: var(--fs-body); color: var(--ink-soft); line-height: 1.6; max-width: 360px; }
+
+  .controls {
+    background: white;
+    padding: 14px 18px;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  button { font-family: inherit; cursor: pointer; border: none; transition: all 0.15s; font-weight: 600; }
+  button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn-back, .btn-pause {
+    padding: 12px 14px;
+    background: white;
+    color: var(--navy);
+    border: 1.5px solid var(--rule);
+    border-radius: 8px;
+    font-size: var(--fs-small);
+  }
+  .btn-back:hover:not(:disabled), .btn-pause:hover:not(:disabled) {
+    background: var(--paper);
+    border-color: var(--navy);
+  }
+  .btn-pause.is-paused {
+    background: var(--amber);
+    color: white;
+    border-color: var(--amber);
+  }
+
+  .btn-next {
+    padding: 14px 24px;
+    background: var(--navy);
+    color: white;
+    border-radius: 8px;
+    font-size: var(--fs-action);
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(31, 58, 95, 0.3);
+    grid-column: 4;
+  }
+  .btn-next:hover:not(:disabled) {
+    background: var(--navy-deep);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(31, 58, 95, 0.4);
+  }
+  .btn-next.is-final {
+    background: var(--green);
+    box-shadow: 0 4px 14px rgba(46, 125, 50, 0.3);
+  }
+  .btn-next.is-final:hover { background: #1B5E20; }
+
+  .footer {
+    background: var(--paper);
+    padding: 8px 18px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--fs-tiny);
+    color: var(--ink-faint);
+    flex-shrink: 0;
+  }
+
+  .pass-jump { display: flex; gap: 4px; }
+  .jump-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--rule);
+    color: var(--ink-soft);
+    font-size: var(--fs-tiny);
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .jump-dot:hover { background: var(--navy-soft); color: white; }
+  .jump-dot.is-current {
+    background: var(--navy);
+    color: white;
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--navy-soft);
+  }
+  .jump-dot.is-done { background: var(--green); color: white; }
+
+  .reset-btn {
+    background: transparent;
+    color: var(--ink-faint);
+    border: none;
+    cursor: pointer;
+    font-size: var(--fs-tiny);
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .reset-btn:hover { color: var(--rose); }
+
+  .pause-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(31, 58, 95, 0.96);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    color: white;
+  }
+  .pause-overlay.is-visible { display: flex; }
+  .pause-card { text-align: center; padding: 40px; max-width: 380px; }
+  .pause-emoji { font-size: 72px; margin-bottom: 14px; }
+  .pause-title { font-size: var(--fs-huge); font-weight: 700; margin-bottom: 8px; }
+  .pause-subtitle { font-size: var(--fs-body); opacity: 0.85; margin-bottom: 6px; }
+  .pause-timer {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 18px 0;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 2px;
+  }
+  .pause-resume {
+    background: white;
+    color: var(--navy);
+    padding: 16px 32px;
+    border-radius: 10px;
+    font-size: var(--fs-action);
+    font-weight: 700;
+    margin-top: 14px;
+  }
+  .pause-resume:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .en {
+    font-size: var(--fs-tiny);
+    color: var(--ink-faint);
+    font-style: italic;
+    direction: ltr;
+    text-align: left;
+    line-height: 1.5;
+  }
+
+  @media (max-height: 720px) {
+    .step-body { padding: 14px 16px; gap: 10px; }
+    .pass-title-he { font-size: 22px; }
+    .step-action { font-size: 18px; }
+    .controls { padding: 10px 14px; }
+    .btn-next { padding: 12px 18px; font-size: 18px; }
+    .landing { padding: 14px 16px; }
+    .landing-emoji { font-size: 28px; }
+    .landing-title { font-size: 22px; }
+    .col-ref { padding: 6px 10px; }
+    .col-chip { padding: 2px 5px; font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="header">
+    <div class="header-top">
+      <span class="workflow-name" id="workflow-name">GadiW Migration · Excel Filling · v3</span>
+      <span class="pause-badge" id="pause-badge">⏸ הופסק זמנית</span>
+    </div>
+    <div class="pass-line">
+      <div class="pass-title-he" id="pass-title">—</div>
+      <div class="pass-counter" id="pass-counter">—</div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Persistent column reference bar — always visible -->
+  <div class="col-ref" id="col-ref"></div>
+
+  <div class="step-body" id="step-body"></div>
+
+  <div class="controls">
+    <button class="btn-pause" id="btn-pause" title="הפסקה (גדי בטלפון)">⏸ הפסק</button>
+    <button class="btn-back" id="btn-back" title="חזור צעד אחורה">← אחורה</button>
+    <span></span>
+    <button class="btn-next" id="btn-next">✓ בוצע, הבא →</button>
+  </div>
+
+  <div class="footer">
+    <div class="pass-jump" id="pass-jump"></div>
+    <button class="reset-btn" id="btn-reset" title="להתחיל מהתחלה">איפוס מלא</button>
+  </div>
+</div>
+
+<div class="pause-overlay" id="pause-overlay">
+  <div class="pause-card">
+    <div class="pause-emoji">☕</div>
+    <div class="pause-title">הופסק</div>
+    <div class="pause-subtitle">גדי בטלפון? קפה? אין לחץ.</div>
+    <div class="pause-timer" id="pause-timer">00:00</div>
+    <div class="pause-subtitle" style="font-size: 13px; opacity: 0.7;">המקום שלך נשמר. תמשיך כשמוכן.</div>
+    <button class="pause-resume" id="btn-resume">▶ ממשיכים</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// COLUMN DEFINITIONS — drives the persistent reference bar
+// ============================================================================
+
+var COLUMNS = [
+  { letter: 'A', name: 'row_id',             cat: 'auto'   },
+  { letter: 'B', name: 'file_path',          cat: 'auto'   },
+  { letter: 'C', name: 'file_name',          cat: 'auto'   },
+  { letter: 'D', name: 'file_size_kb',       cat: 'auto'   },
+  { letter: 'E', name: 'folder_hint',        cat: 'auto'   },
+  { letter: 'F', name: 'file_modified_date', cat: 'auto'   },
+  { letter: 'G', name: 'client_name',        cat: 'human'  },
+  { letter: 'H', name: 'doc_tag',            cat: 'human'  },
+  { letter: 'I', name: 'direction',          cat: 'human'  },
+  { letter: 'J', name: 'doc_date',           cat: 'human'  },
+  { letter: 'K', name: 'description',        cat: 'human'  },
+  { letter: 'L', name: 'status',             cat: 'script' }
+];
+
+function menuHe(text) { return '<span class="menu-he">' + text + '</span>'; }
+function menuEn(text) { return '<span class="menu-en">' + text + '</span>'; }
+function menu(he, en) { return menuHe(he) + ' <span style="font-size: 0.85em; color: var(--ink-faint);">(' + menuEn(en) + ')</span>'; }
+function kbd(text) { return '<span class="kbd">' + text + '</span>'; }
+function lit(text) { return '<span class="literal">' + text + '</span>'; }
+function cell(addr) { return '<span class="cell">' + addr + '</span>'; }
+function substeps(items) {
+  return '<div class="substeps"><ol>' + items.map(function (i) { return '<li>' + i + '</li>'; }).join('') + '</ol></div>';
+}
+
+// ============================================================================
+// WORKFLOW DATA
+// ============================================================================
+
+var WORKFLOWS = {
+  migration_excel_filling: {
+    name_he: 'מילוי Excel למיגרציה',
+    name_en: 'Migration Excel Filling',
+    passes: [
+
+      // PASS 0 — PRE-FLIGHT
+      {
+        title_he: 'בדיקה ראשונית של אקסל',
+        title_en: 'Pre-flight Excel sanity check',
+        emoji: '🛡️',
+        activeColumn: null,  // No specific column highlighted in pre-flight
+        landing: {
+          emoji: '🛡️',
+          title_he: 'מעבר 0: לפני שמתחילים למלא',
+          body_he: 'לפני שעובדים — נוודא שאקסל פתוח כמו שצריך. ללא הצעדים האלה, הסקריפט עלול להיכשל באמצע.',
+          target_he: 'לא ממלאים שום עמודה כאן — רק בדיקות אקסל בסיסיות.'
+        },
+        steps: [
+          {
+            tag: 'אקסל פתוח?',
+            action_he: 'ודא שאקסל פתוח עם קובץ ה-inventory',
+            detail_he: 'הסתכל בכותרת אקסל למעלה — הקובץ צריך להיראות כמו: <span class="literal">gadi_inventory_DDMMYYYY_HHMMSS.xlsx</span> (לדוגמה: gadi_inventory_28042026_103915.xlsx).',
+            tip_he: '💡 אם פותחים שני קבצי inventory בטעות — סגור אחד. הסקריפט מקבל רק קובץ אחד בכל פעם.',
+            verify_title_he: 'איך אדע שזה הקובץ הנכון?',
+            verify_body_he: 'בכותרת חלון Excel למעלה — שם הקובץ מכיל "gadi_inventory_" + תאריך + שעה + ".xlsx".'
+          },
+          {
+            tag: 'גיליון נכון',
+            action_he: 'ודא שאתה בגיליון <strong>"Files"</strong>',
+            detail_he: 'בתחתית האקסל (לא בראש!) יש 3 כרטיסיות: <strong>Files</strong> · Instructions · Valid Values. לחץ על <strong>Files</strong> אם אינך שם.',
+            verify_title_he: 'איך אדע שאני בגיליון הנכון?',
+            verify_body_he: 'בשורה 1 של הגיליון אתה רואה כותרות באנגלית: row_id, file_path, file_name, ... וכ-12 עמודות. הכרטיסייה Files בתחתית מודגשת בלבן.'
+          },
+          {
+            tag: 'בדיקת עמודות',
+            action_he: 'אמת שיש 12 עמודות (A עד L)',
+            detail_he: 'הסתכל בשורה 1 של הגיליון. אתה אמור לראות 12 כותרות. הצבעים שלהם מסבירים מה תפקידם:',
+            substeps_he: [
+              '<strong>6 עמודות בכחול</strong> (A-F) — אוטומטיות, ממולאות ע"י הסקריפט. <strong>אל תיגע בהן.</strong>',
+              '<strong>5 עמודות בירוק</strong> (G-K) — אתה ממלא את המידע כאן',
+              '<strong>1 עמודה באפור</strong> (L = status) — הסקריפט ימלא בזמן ההעלאה. <strong>השאר ריק.</strong>',
+              'סך הכל: 6 + 5 + 1 = <strong>12 עמודות</strong>'
+            ],
+            verify_title_he: 'הסרגל למעלה מראה לי הכל!',
+            verify_body_he: 'הסתכל בסרגל הצבעוני למעלה (מתחת לכותרת הסגולה). הוא מראה את כל 12 העמודות עם האותיות והשמות. תוכל להציץ בו תמיד.',
+            warn_he: '⚠ אם רואים פחות מ-12 עמודות — משהו לא תקין. סגור והרץ scan_usb.py מחדש.'
+          },
+          {
+            tag: 'סינון כבוי',
+            action_he: 'ודא שלא פעיל סינון (Filter)',
+            detail_he: 'סינון פעיל יסתיר שורות ועלול לבלבל את המיון. הסר אם פעיל.',
+            substeps_he: [
+              'בתפריט עליון: לחץ ' + menu('נתונים', 'Data'),
+              'הסתכל על הכפתור ' + menu('סינון', 'Filter') + '. אם הוא <strong>מודגש בכחול</strong> — הסינון פעיל',
+              'אם פעיל — לחץ עליו פעם אחת כדי לכבות'
+            ],
+            verify_title_he: 'הסינון מכובה?',
+            verify_body_he: 'בכותרות העמודות בשורה 1 — אין חצי-משולש קטן (▼) ליד שמות הכותרות. אם יש — הסינון עוד פעיל.'
+          },
+          {
+            tag: 'אין תא בעריכה',
+            action_he: 'לחץ ' + kbd('ESC') + ' פעם אחת',
+            detail_he: 'מבטיח שאין תא במצב עריכה. אם תא בעריכה — Excel לא יאפשר שמירה ב-Ctrl+S.',
+            tip_he: '💡 אם רואים סמן (קו מהבהב) בתוך תא — אתה בעריכה. ESC יוצא.'
+          },
+          {
+            tag: 'שמירה ראשונה',
+            action_he: 'שמור את האקסל עכשיו',
+            detail_he: 'לחץ ' + kbd('Ctrl') + '+' + kbd('S') + '. אם נפתח חלון "שמירה כ" — לחץ ' + menu('שמור', 'Save') + ' (פורמט .xlsx).',
+            warn_he: '⚠ אם נפתח "Compatibility Checker" — לחץ ' + menu('המשך', 'Continue') + '. שום פורמטים שלך לא ייעלמו.',
+            tip_he: '💡 שמור כל 5 דקות במהלך כל הסשן. Ctrl+S = ההרגל החשוב ביום הזה.'
+          }
+        ]
+      },
+
+      // PASS 1
+      {
+        title_he: 'מעבר 1: מילוי שמות לקוחות',
+        title_en: 'Pass 1: Fill client_name (column G)',
+        emoji: '👤',
+        activeColumn: 'G',
+        landing: {
+          emoji: '👤',
+          title_he: 'מעבר 1: עמודה G — client_name',
+          body_he: 'ממלאים את שם הלקוח לכל אחד מהקבצים. הטריק: ממיינים לפי תיקייה, ואז Ctrl+D למלא בקבוצות. ~30 שניות לכל לקוח.',
+          target_he: '🎯 העמודה הפעילה: <strong>G (client_name)</strong> — מודגשת בכתום בסרגל למעלה.'
+        },
+        steps: [
+          {
+            tag: 'הכרת השדה',
+            action_he: 'הכר את עמודה G — שם הלקוח',
+            detail_he: 'עמודה <strong>G</strong> נקראת <strong>client_name</strong>. כותרת ירוקה. כאן אתה רושם את שם הלקוח <strong>בדיוק</strong> כפי שהוא במסד הנתונים.',
+            warn_he: '⚠ דיוק מילולי חיוני! "יעקב כהן" שונה מ"כהן יעקב". סקריפט המיגרציה ידחה כל שם שלא תואם.',
+            tip_he: '💡 אם אינך בטוח בשם — פתח את האתר localhost:5173 ובדוק את שמות הלקוחות הקיימים.'
+          },
+          {
+            tag: 'שאל את גדי',
+            action_he: 'תזהה לקוחות חדשים',
+            detail_he: 'עבור על כל קבוצת תיקייה ב-folder_hint (עמודה <strong>E</strong>) ושאל את גדי: <strong>"של מי הקבצים האלה?"</strong>',
+            tip_he: '💡 רשום על נייר את כל שמות הלקוחות שגדי נותן. אחר כך תיצור את החדשים באתר.',
+            warn_he: '⚠ אל תיצור לקוחות חדשים באמצע — שמור את היצירה למקבץ אחד אחרי המילוי.'
+          },
+          {
+            tag: 'מיון 1.1',
+            action_he: 'מיין את כל השורות לפי תיקייה',
+            detail_he: 'מיון = קיבוץ קבצים מאותו לקוח יחד. הצעד הזה הוא הקריטי ביותר במעבר הזה.',
+            substeps_he: [
+              'לחץ על תא כלשהו בתוך הנתונים (לא על כותרת)',
+              'בתפריט עליון: ' + menu('נתונים', 'Data'),
+              'לחץ על הכפתור ' + menu('מיין', 'Sort') + ' (לא Sort A→Z הקטן — הגדול)',
+              'בחלון שנפתח — סמן את ' + menu('בנתונים שלי כותרות', 'My data has headers') + ' (חובה!)',
+              'בשדה ' + menu('מיין לפי', 'Sort by') + ' — בחר ' + lit('folder_hint') + ' (זו עמודה <strong>E</strong>)',
+              'בשדה ' + menu('סדר', 'Order') + ' — בחר ' + menu('א עד ת', 'A to Z'),
+              'לחץ ' + menu('אישור', 'OK')
+            ],
+            warn_he: '⚠ אם נפתחה אזהרה "Found data outside selection" — לחץ ' + menu('הרחב את הבחירה', 'Expand the selection') + ' ואז ' + menu('מיין', 'Sort') + '.'
+          },
+          {
+            tag: 'אימות מיון',
+            action_he: 'אמת שהמיון עבד',
+            detail_he: 'הסתכל בעמודה <strong>E</strong> (folder_hint) — היא צריכה להציג כעת תיקיות מקובצות.',
+            verify_title_he: 'מה אני אמור לראות בעמודה E?',
+            verify_body_he: 'ערכים זהים מקובצים יחד. למשל: Cohen, Cohen, Cohen, Goldberg, Goldberg, Levi, Levi. <strong>לא</strong>: Cohen, Goldberg, Cohen, Levi.',
+            danger_he: '⛔ אם הסדר נראה אקראי — המיון <strong>לא הצליח</strong>! בטל ב-' + kbd('Ctrl') + '+' + kbd('Z') + ' וחזור על הצעד הקודם.'
+          },
+          {
+            tag: 'מילוי לקוח 1',
+            action_he: 'התחל למלא את הלקוח הראשון',
+            detail_he: 'נמצא את הקבוצה הראשונה ונכניס שם.',
+            substeps_he: [
+              'מצא את השורה הראשונה של הלקוח הראשון. <strong>שים לב: שורה 1 = כותרות, השורה הראשונה של נתונים היא שורה 2!</strong>',
+              'לחץ על תא ' + cell('G2') + ' (עמודה G, שורה 2)',
+              'הקלד את שם הלקוח ב<strong>עברית</strong> ובדיוק כמו ב-DB',
+              'דוגמה: ' + lit('יעקב כהן'),
+              'לחץ ' + kbd('Enter')
+            ],
+            warn_he: '⚠ <strong>בלי רווח אחרי השם!</strong> "יעקב כהן " עם רווח בסוף = השם נדחה. בדוק זאת.',
+            tip_he: '💡 לחץ על המילה הכחולה למעלה כדי להעתיק את הטקסט המדויק.'
+          },
+          {
+            tag: 'מילוי קבוצתי',
+            action_he: 'מלא את כל השורות של אותו לקוח ב-Ctrl+D',
+            detail_he: 'זה הקסם של אקסל. בשנייה אחת ממלאים 50 תאים.',
+            substeps_he: [
+              'לחץ שוב על תא ' + cell('G2') + ' שמילאת זה עתה (כדי לבחור אותו)',
+              'מצא את השורה האחרונה של אותו לקוח (תיקייה זהה ב-E)',
+              '<strong>החזק את ' + kbd('Shift') + '</strong> ולחץ על תא <strong>G</strong> של השורה האחרונה',
+              'אמור לראות הילה כחולה סביב הטווח שבחרת',
+              'לחץ ' + kbd('Ctrl') + '+' + kbd('D') + ' — Fill Down'
+            ],
+            verify_title_he: 'הצליח?',
+            verify_body_he: 'כל התאים בעמודה G מהשורה הראשונה ועד האחרונה של הלקוח הזה — זהים. אם לא — בטל ב-Ctrl+Z.',
+            warn_he: '⚠ אם Ctrl+D ממלא בריק — סימן שהתחלת את הבחירה מתא ריק. בחר מחדש מתא <strong>שמכיל</strong> את השם.'
+          },
+          {
+            tag: 'חזור לכל הלקוחות',
+            action_he: 'חזור על תהליך המילוי לכל הלקוחות',
+            detail_he: 'עבור על כל קבוצת לקוח. הקלד שם → בחר טווח → ' + kbd('Ctrl') + '+' + kbd('D') + '. אם 50 לקוחות → 50 חזרות, כל אחת ~30 שניות.',
+            tip_he: '💡 קצב טוב: לקוח חדש כל 30-45 שניות. אם איטי יותר — אתה בוודאי מקליד מחדש או טועה במיקום.',
+            warn_he: '⚠ <strong>בלי לדלג על שורות!</strong> עמודה G חייבת להיות מלאה לחלוטין לפני המעבר הבא.'
+          },
+          {
+            tag: 'בדיקת ריקים',
+            action_he: 'מצא תאים ריקים בעמודה G',
+            detail_he: 'מבטיח שלא דילגנו על אף שורה. השלב החשוב ביותר במעבר.',
+            substeps_he: [
+              'לחץ על כותרת עמודה G (האות G מעל הכותרת "client_name") כדי לבחור את כל העמודה',
+              menu('בית', 'Home') + ' (טאב עליון)',
+              menu('חפש ובחר', 'Find & Select') + ' (כפתור עם זכוכית מגדלת)',
+              menu('עבור אל ייחודי', 'Go to Special'),
+              'סמן ' + menu('ריקים', 'Blanks'),
+              menu('אישור', 'OK')
+            ],
+            verify_title_he: 'מה צריך לקרות?',
+            verify_body_he: 'אם <strong>אין ריקים בעמודה G</strong> — Excel יציג הודעה "No cells found". <strong>זה מה שאתה רוצה!</strong>',
+            danger_he: '⛔ אם נבחרו תאים — אלה התאים הריקים שצריך למלא. עבור עליהם וטפל. <strong>אל תמשיך לפני שעמודה G מלאה.</strong>'
+          },
+          {
+            tag: 'שמירה',
+            action_he: 'שמור את האקסל',
+            detail_he: 'לחץ ' + kbd('Ctrl') + '+' + kbd('S') + '. אם נפתח חלון פורמט — לחץ Yes/Continue.',
+            tip_he: '💡 חיסכון של 5 דקות עבודה במקרה של תקלה. שווה את 2 השניות.'
+          }
+        ]
+      },
+
+      // PASS 2
+      {
+        title_he: 'מעבר 2: מילוי תיוג (doc_tag)',
+        title_en: 'Pass 2: Fill doc_tag (column H)',
+        emoji: '🏷',
+        activeColumn: 'H',
+        landing: {
+          emoji: '🏷',
+          title_he: 'מעבר 2: עמודה H — doc_tag',
+          body_he: 'ממלאים סוג מסמך לכל קובץ: חוזה / מכתב / תעודה / קבלה. הטריק: ממיינים לפי סיומת, ובדרך כלל כל סיומת = סוג מסמך אחד.',
+          target_he: '🎯 העמודה הפעילה: <strong>H (doc_tag)</strong> — מודגשת בכתום בסרגל למעלה.'
+        },
+        steps: [
+          {
+            tag: 'הכרת השדה',
+            action_he: 'הכר את עמודה H — תיוג מסמך',
+            detail_he: 'עמודה <strong>H</strong> נקראת <strong>doc_tag</strong>. ערכים נפוצים: ' + lit('חוזה') + lit('מכתב') + lit('תעודה') + lit('קבלה') + lit('חשבונית') + lit('דוח') + lit('תמונה') + lit('אישור') + '.',
+            tip_he: '💡 לחץ על כל אחת מהמילים לעיל כדי להעתיק. אז Ctrl+V בתא.'
+          },
+          {
+            tag: 'מיון 2.1',
+            action_he: 'מיין לפי שם לקוח, ואז לפי file_path',
+            detail_he: 'מיון פנימי דו-שלבי: ראשית לפי לקוח, אחר כך לפי הסיומת בתוך כל לקוח.',
+            substeps_he: [
+              'לחץ על תא בנתונים',
+              menu('נתונים', 'Data'),
+              menu('מיין', 'Sort'),
+              'סמן ' + menu('בנתונים שלי כותרות', 'My data has headers'),
+              'מיין לפי <strong>1</strong>: ' + lit('client_name') + ' (עמודה <strong>G</strong>), ' + menu('א עד ת', 'A to Z'),
+              'לחץ ' + menu('הוסף רמה', 'Add Level'),
+              'מיין לפי <strong>2</strong>: ' + lit('file_path') + ' (עמודה <strong>B</strong>), ' + menu('א עד ת', 'A to Z'),
+              menu('אישור', 'OK')
+            ]
+          },
+          {
+            tag: 'אימות מיון',
+            action_he: 'אמת שהמיון עבד',
+            verify_title_he: 'מה אני אמור לראות?',
+            verify_body_he: 'בתוך כל קבוצת לקוח (עמודה G) — הקבצים מסודרים לפי שם הקובץ. כל ה-PDF ביחד, אז כל ה-DOCX ביחד, אז כל ה-JPG ביחד.'
+          },
+          {
+            tag: 'מילוי PDF',
+            action_he: 'תייג את כל קבצי ה-.pdf של הלקוח כ-' + lit('חוזה'),
+            detail_he: 'בדרך כלל PDF = חוזה (חוזים, נספחים, מסמכים רשמיים).',
+            substeps_he: [
+              'מצא את ה-PDF הראשון של הלקוח הראשון',
+              'לחץ על תא <strong>H</strong> של אותה שורה',
+              'הקלד ' + lit('חוזה'),
+              'לחץ ' + kbd('Enter'),
+              'לחץ שוב על אותו תא H',
+              kbd('Shift') + ' + לחץ על תא H של ה-PDF האחרון של אותו לקוח',
+              kbd('Ctrl') + '+' + kbd('D')
+            ],
+            tip_he: '💡 חזור על זה לכל לקוח. בערך 10-15 שניות לכל לקוח.'
+          },
+          {
+            tag: 'מילוי DOCX',
+            action_he: 'תייג את כל קבצי ה-.docx כ-' + lit('מכתב'),
+            detail_he: 'בדרך כלל DOCX = מכתב (תכתובת, מסמכים מודפסים, טיוטות).',
+            tip_he: '💡 אותו תהליך כמו עם ה-PDF — לכל לקוח, בחר טווח DOCX, Ctrl+D.'
+          },
+          {
+            tag: 'מילוי תמונות',
+            action_he: 'תייג את קבצי ה-.jpg/.png כ-' + lit('תעודה') + ' או ' + lit('תמונה'),
+            detail_he: 'תמונות = תעודות זהות, ראיות צילום, סריקות. שאל את גדי על כל קובץ לא ברור.',
+            tip_he: '💡 ברירת מחדל בטוחה: ' + lit('תעודה') + ' אם לא בטוח. אפשר לתקן אחר כך באתר.'
+          },
+          {
+            tag: 'מילוי אקסל/קבלות',
+            action_he: 'תייג קבצי .xlsx כ-' + lit('דוח') + ' ו-.pdf חריגים שהם קבלות כ-' + lit('קבלה'),
+            detail_he: 'שאל את גדי על קבצים שלא מתאימים לדפוס.'
+          },
+          {
+            tag: 'בדיקת ריקים',
+            action_he: 'מצא תאים ריקים בעמודה H',
+            detail_he: 'אותו תהליך כמו במעבר 1.',
+            substeps_he: [
+              'לחץ על כותרת עמודה H',
+              menu('בית', 'Home'),
+              menu('חפש ובחר', 'Find & Select'),
+              menu('עבור אל ייחודי', 'Go to Special'),
+              menu('ריקים', 'Blanks'),
+              menu('אישור', 'OK')
+            ],
+            danger_he: '⛔ אם נמצאו ריקים — אסור להמשיך. מלא אותם, או הסר את אותן שורות מהאקסל אם לא רוצים להעלות.',
+            verify_title_he: 'מצב טוב?',
+            verify_body_he: 'הודעה "No cells found" = עמודה H מלאה לחלוטין. ✓'
+          },
+          {
+            tag: 'שמירה',
+            action_he: 'שמור את האקסל',
+            detail_he: kbd('Ctrl') + '+' + kbd('S')
+          }
+        ]
+      },
+
+      // PASS 3
+      {
+        title_he: 'מעבר 3: מילוי כיוון (direction)',
+        title_en: 'Pass 3: Fill direction (column I)',
+        emoji: '↔️',
+        activeColumn: 'I',
+        landing: {
+          emoji: '↔️',
+          title_he: 'מעבר 3: עמודה I — direction',
+          body_he: 'ממלאים את כיוון המסמך. רק 3 ערכים אפשריים: פנימי / התקבל / נשלח. בעמודה זו יש כבר רשימה נפתחת מובנית באקסל.',
+          target_he: '🎯 העמודה הפעילה: <strong>I (direction)</strong> — מודגשת בכתום בסרגל למעלה.'
+        },
+        steps: [
+          {
+            tag: 'הכרת השדה',
+            action_he: 'הכר את עמודה I — כיוון המסמך',
+            detail_he: 'בדיוק <strong>3 ערכים תקפים</strong>: ' + lit('פנימי') + ' (internal) · ' + lit('התקבל') + ' (received) · ' + lit('נשלח') + ' (sent).',
+            danger_he: '⛔ אסור ערכים אחרים! "התקבלה" עם ה במקום "התקבל" — נדחה. הרשימה הנפתחת תמנע טעויות.',
+            tip_he: '💡 העמודה הזו <strong>מובנית עם רשימה נפתחת</strong> מאקסל. לחץ על תא I → תראה חץ קטן → בחר ערך.'
+          },
+          {
+            tag: 'מיון 3.1',
+            action_he: 'מיין לפי שם לקוח + שם קובץ',
+            detail_he: 'דומה למעבר 2 — לקבץ קבצים בעלי דפוס דומה.',
+            substeps_he: [
+              menu('נתונים', 'Data') + ' → ' + menu('מיין', 'Sort'),
+              'סמן ' + menu('בנתונים שלי כותרות', 'My data has headers'),
+              'מיין 1: ' + lit('client_name') + ' (G)',
+              menu('הוסף רמה', 'Add Level'),
+              'מיין 2: ' + lit('file_name') + ' (C)',
+              menu('אישור', 'OK')
+            ]
+          },
+          {
+            tag: 'מילוי "התקבל"',
+            action_he: 'קבצים שהתקבלו מבחוץ → ' + lit('התקבל'),
+            detail_he: 'דפוסי שמות שמרמזים על קבלה: <strong>"מבנק", "מאת", "from", "incoming", "received", "התקבל"</strong>.',
+            substeps_he: [
+              'בחר תא I של קובץ שהתקבל',
+              'לחץ על החץ הקטן בתא — תופיע רשימה נפתחת',
+              'בחר ' + lit('התקבל'),
+              'אם יש עוד קבצים מאותו דפוס — בחר טווח, ' + kbd('Ctrl') + '+' + kbd('D')
+            ],
+            tip_he: '💡 שאל את גדי על דפוסים: "כל הקבצים שמתחילים ב-מ הם נכנסים?"'
+          },
+          {
+            tag: 'מילוי "נשלח"',
+            action_he: 'קבצים שאתה שלחת ללקוחות → ' + lit('נשלח'),
+            detail_he: 'דפוסים: <strong>"אל", "to", "sent", "outgoing", "נשלח"</strong>. גם מכתבים יוצאים.'
+          },
+          {
+            tag: 'מילוי "פנימי"',
+            action_he: 'כל השאר → ' + lit('פנימי'),
+            detail_he: 'חוזים, רשימות, טיוטות, מסמכי עבודה פנימיים — לרוב פנימיים.',
+            tip_he: '💡 ברירת מחדל בטוחה: ' + lit('פנימי') + '. אם לא בטוח, פנימי מתאים. גדי יוכל לערוך באתר.'
+          },
+          {
+            tag: 'בדיקת ריקים',
+            action_he: 'מצא תאים ריקים בעמודה I',
+            detail_he: 'לחץ על כותרת עמודה I, אז ' + menu('בית', 'Home') + ' → ' + menu('חפש ובחר', 'Find & Select') + ' → ' + menu('עבור אל ייחודי', 'Go to Special') + ' → ' + menu('ריקים', 'Blanks'),
+            danger_he: '⛔ עמודה I חייבת להיות מלאה לחלוטין! הסקריפט דוחה כל שורה ללא direction.',
+            verify_title_he: 'מצב טוב?',
+            verify_body_he: '"No cells found" = ✓'
+          },
+          {
+            tag: 'שמירה',
+            action_he: 'שמור',
+            detail_he: kbd('Ctrl') + '+' + kbd('S')
+          }
+        ]
+      },
+
+      // PASS 4
+      {
+        title_he: 'מעבר 4: עמודות אופציונליות',
+        title_en: 'Pass 4: Optional columns (J + K)',
+        emoji: '📅',
+        activeColumn: null,
+        landing: {
+          emoji: '📅',
+          title_he: 'מעבר 4: עמודות J + K — אופציונלי',
+          body_he: 'הכי מהיר! עמודה J (תאריך) ו-K (תיאור) יכולות להישאר ריקות. הסקריפט יודע מה לעשות.',
+          target_he: '⏭ אין מילוי בפועל — נאשר שעמודות J ו-K נשארות ריקות בכוונה.'
+        },
+        steps: [
+          {
+            tag: 'תאריך - השאר ריק',
+            action_he: 'עמודה <strong>J (doc_date)</strong> — אל תמלא',
+            detail_he: 'אם J ריק — הסקריפט ישתמש ב-file_modified_date מעמודה <strong>F</strong> (תאריך שינוי הקובץ). זה בסדר ב-99% מהמקרים.',
+            warn_he: '⚠ <strong>אל תמלא J סתם!</strong> אם תמלא תאריך לא נכון — הוא ישמר ב-DB ויקשה על חיפוש מאוחר יותר.',
+            tip_he: '💡 מלא J <strong>רק</strong> אם גדי יודע תאריך מדויק יותר מתאריך הקובץ.'
+          },
+          {
+            tag: 'תיאור - השאר ריק',
+            action_he: 'עמודה <strong>K (description)</strong> — אל תמלא',
+            detail_he: 'אופציונלי. שדה חופשי. גדי יוכל להוסיף תיאורים בעצמו אחר כך באתר, מהר ובחיפוש מקיף יותר.',
+            tip_he: '💡 חוסך 30+ דקות עבודה. עדיף לתת לגדי לערוך כשהוא רואה את הקובץ ב-preview.'
+          },
+          {
+            tag: 'אישור',
+            action_he: 'אישור — השארנו J ו-K ריקים בכוונה',
+            detail_he: 'זו <strong>החלטה מודעת</strong>. הסקריפט יקבל את זה. אנחנו יכולים להמשיך.',
+            verify_title_he: 'מצב הקובץ עכשיו:',
+            verify_body_he: 'עמודות G, H, I — מלאות לחלוטין ✓<br>עמודות J, K — ריקות (בכוונה) ✓<br>עמודה L (status) — ריקה (הסקריפט ימלא בזמן ההעלאה) ✓'
+          }
+        ]
+      },
+
+      // PASS 5
+      {
+        title_he: 'מעבר 5: בדיקה אחרונה ושמירה לסגירה',
+        title_en: 'Pass 5: Final scan + save + close',
+        emoji: '✅',
+        activeColumn: null,
+        landing: {
+          emoji: '✅',
+          title_he: 'מעבר 5: לפני הרצת הסקריפט',
+          body_he: 'בדיקה אחרונה — שום שורה לא תיפסל. סגירה מסודרת של אקסל. אז אפשר להריץ את הסקריפט.',
+          target_he: '🔍 בדיקת תקינות סופית של עמודות G, H, I + סגירת אקסל מסודרת.'
+        },
+        steps: [
+          {
+            tag: 'סריקה כללית',
+            action_he: 'בדוק שכל G, H, I מלאות',
+            detail_he: 'נשתמש ב-Find & Select לבדוק את כל 3 העמודות בחיפוש אחד.',
+            substeps_he: [
+              'בחר את כל העמודות G, H, I (לחץ על כותרת G, החזק Shift, לחץ על כותרת I)',
+              menu('בית', 'Home') + ' → ' + menu('חפש ובחר', 'Find & Select'),
+              menu('עבור אל ייחודי', 'Go to Special'),
+              'סמן ' + menu('ריקים', 'Blanks'),
+              menu('אישור', 'OK')
+            ],
+            verify_title_he: '🎯 הצעד הקריטי:',
+            verify_body_he: '<strong>"No cells found"</strong> — מושלם! עמודות G, H, I מלאות לחלוטין. אפשר להמשיך.',
+            danger_he: '⛔ אם נמצאו ריקים — אלה השורות שייפסלו! מלא אותן עכשיו לפני שמורידים את האקסל.'
+          },
+          {
+            tag: 'בדיקת רווחים',
+            action_he: 'בדוק ש"יעקב כהן" אינו "יעקב כהן " עם רווח',
+            detail_he: 'הטעות הכי נפוצה במיגרציות. רווח אחרי שם → דחייה.',
+            substeps_he: [
+              kbd('Ctrl') + '+' + kbd('H') + ' (Find & Replace)',
+              'בשדה ' + menu('חפש', 'Find what') + ' — הקלד רווח אחד ואז הקלד ' + lit('"'),
+              'מחק את ה-" — נשאר רק רווח',
+              'לחץ ' + menu('סגור', 'Close') + ' (זו רק בדיקה, לא לבצע החלפה)'
+            ],
+            tip_he: '💡 חלופה: סנן עמודה G — אם יש כפילויות "יעקב כהן" ו-"יעקב כהן ", שניהם יופיעו בנפרד ברשימה.'
+          },
+          {
+            tag: 'מיון חזרה',
+            action_he: 'מיין חזרה לפי row_id (עמודה A) עולה',
+            detail_he: 'משחזר את הסדר המקורי. לא חובה טכנית, אבל קוסמטי טוב.',
+            substeps_he: [
+              menu('נתונים', 'Data') + ' → ' + menu('מיין', 'Sort'),
+              'מיין לפי ' + lit('row_id') + ' (A), ' + menu('הקטן ביותר עד הגדול ביותר', 'Smallest to Largest'),
+              menu('אישור', 'OK')
+            ],
+            tip_he: '💡 הסקריפט לא מתעניין בסדר השורות — הוא קורא לפי row_id. אבל זה נראה מקצועי לגדי.'
+          },
+          {
+            tag: 'שמירה אחרונה',
+            action_he: 'שמירה סופית',
+            detail_he: kbd('Ctrl') + '+' + kbd('S'),
+            warn_he: '⚠ אם נפתח דיאלוג "Save as XML?" או "Compatibility?" — בחר ' + menu('כן', 'Yes') + ' ושמור כ-.xlsx.'
+          },
+          {
+            tag: 'סגירת אקסל',
+            action_he: 'סגור את אקסל לחלוטין',
+            detail_he: 'לחץ X על החלון. אם נפתח דיאלוג "Save changes?" → ' + menu('שמור', 'Save'),
+            danger_he: '⛔ <strong>וודא שאקסל לא רץ ברקע!</strong> אם הסקריפט יקבל "file is being used by another process" — Task Manager → סיים EXCEL.EXE',
+            substeps_he: [
+              'לחץ על X של החלון',
+              'אם נפתח "Save changes?" — ' + menu('שמור', 'Save'),
+              'פתח Task Manager (' + kbd('Ctrl') + '+' + kbd('Shift') + '+' + kbd('Esc') + ')',
+              'חפש EXCEL.EXE ברשימת הפרוסיסים',
+              'אם קיים — בחר ועצור (End task)',
+              'סגור Task Manager'
+            ]
+          },
+          {
+            tag: 'מוכנים!',
+            action_he: 'מוכנים להרצת הסקריפט',
+            detail_he: 'הצעד הבא: PowerShell → להריץ את ה-dry-run לוודא הכל.',
+            verify_title_he: 'הפקודה להריץ:',
+            verify_body_he: '<span class="literal">python migrate_to_gadiw.py --sheet gadi_inventory_DDMMYYYY_HHMMSS.xlsx --dry-run</span><br><br>החלף את DDMMYYYY_HHMMSS בחותמת הזמן האמיתית של הקובץ שלך.',
+            tip_he: '🎉 כל הכבוד! <strong>החלק הקשה הסתיים.</strong> ההעלאה היא רק 5-10 דקות של מסך פעולה אוטומטי.'
+          }
+        ]
+      }
+
+    ]
+  }
+};
+
+// STATE
+var STORAGE_KEY = 'gadiw_teleprompter_state_v3';
+
+function defaultState() {
+  return {
+    workflowKey: 'migration_excel_filling',
+    passIdx: 0,
+    stepIdx: 0,
+    isPaused: false,
+    pauseStartedAt: null,
+    pauseTotalSeconds: 0,
+    completed: false,
+    landingShown: {},
+    sessionStartedAt: Date.now()
+  };
+}
+
+function loadState() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    var parsed = JSON.parse(raw);
+    var d = defaultState();
+    Object.keys(parsed).forEach(function (k) { d[k] = parsed[k]; });
+    if (!d.landingShown) d.landingShown = {};
+    return d;
+  } catch (e) { return defaultState(); }
+}
+
+function saveState(s) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+  catch (e) { console.warn('Could not save state:', e); }
+}
+
+var state = loadState();
+
+function currentWorkflow() { return WORKFLOWS[state.workflowKey]; }
+function currentPass() {
+  var w = currentWorkflow();
+  if (!w || state.passIdx >= w.passes.length) return null;
+  return w.passes[state.passIdx];
+}
+function currentStep() {
+  var p = currentPass();
+  if (!p || state.stepIdx >= p.steps.length) return null;
+  return p.steps[state.stepIdx];
+}
+function totalStepsAcross() {
+  var w = currentWorkflow();
+  return w.passes.reduce(function (sum, pass) { return sum + pass.steps.length; }, 0);
+}
+function stepsCompletedSoFar() {
+  var w = currentWorkflow();
+  var done = 0;
+  for (var i = 0; i < state.passIdx; i++) {
+    done += w.passes[i].steps.length;
+  }
+  done += state.stepIdx;
+  return done;
+}
+function isLastStep() {
+  var w = currentWorkflow();
+  return (state.passIdx === w.passes.length - 1) &&
+         (state.stepIdx === w.passes[state.passIdx].steps.length - 1);
+}
+function isFirstStep() {
+  return state.passIdx === 0 && state.stepIdx === 0;
+}
+
+var els = {
+  workflowName: document.getElementById('workflow-name'),
+  passTitle:    document.getElementById('pass-title'),
+  passCounter:  document.getElementById('pass-counter'),
+  progressBar:  document.getElementById('progress-bar'),
+  pauseBadge:   document.getElementById('pause-badge'),
+  colRef:       document.getElementById('col-ref'),
+  stepBody:     document.getElementById('step-body'),
+  btnBack:      document.getElementById('btn-back'),
+  btnNext:      document.getElementById('btn-next'),
+  btnPause:     document.getElementById('btn-pause'),
+  btnReset:     document.getElementById('btn-reset'),
+  passJump:     document.getElementById('pass-jump'),
+  pauseOverlay: document.getElementById('pause-overlay'),
+  pauseTimer:   document.getElementById('pause-timer'),
+  btnResume:    document.getElementById('btn-resume')
+};
+
+function renderColumnReference() {
+  var pass = currentPass();
+  var activeLetter = pass && pass.activeColumn ? pass.activeColumn : null;
+
+  var html = COLUMNS.map(function (col) {
+    var cls = 'col-chip cat-' + col.cat;
+    if (activeLetter && col.letter === activeLetter) {
+      cls += ' is-active';
+    }
+    return '<span class="' + cls + '">' +
+             '<span class="col-chip-letter">' + col.letter + '</span>' +
+             '<span class="col-chip-name">' + col.name + '</span>' +
+           '</span>';
+  }).join('');
+  els.colRef.innerHTML = html;
+}
+
+function render() {
+  var w = currentWorkflow();
+  els.workflowName.textContent = w.name_he + ' · ' + w.name_en;
+
+  if (state.completed) {
+    renderComplete();
+    return;
+  }
+
+  els.btnNext.disabled = false;
+
+  var pass = currentPass();
+  var step = currentStep();
+
+  els.passTitle.textContent = (pass.emoji ? pass.emoji + '  ' : '') + pass.title_he;
+  els.passCounter.textContent = 'מעבר ' + (state.passIdx) + ' מתוך ' + (w.passes.length - 1);
+
+  var pct = (stepsCompletedSoFar() / totalStepsAcross()) * 100;
+  els.progressBar.style.width = pct + '%';
+
+  // Render the column reference bar — always visible
+  renderColumnReference();
+
+  var isFirstStepOfPass = state.stepIdx === 0;
+  var landingNotShown = !state.landingShown[state.passIdx];
+  var showLanding = isFirstStepOfPass && landingNotShown && pass.landing;
+
+  els.stepBody.innerHTML = renderStep(step, pass, showLanding);
+
+  if (showLanding) {
+    state.landingShown[state.passIdx] = true;
+  }
+
+  wireLiterals();
+
+  els.btnBack.disabled = isFirstStep();
+  els.btnNext.disabled = false;
+  els.btnNext.classList.toggle('is-final', isLastStep());
+  els.btnNext.textContent = isLastStep() ? '🏁 סיים' : '✓ בוצע, הבא →';
+
+  renderJumpDots();
+  saveState(state);
+  els.stepBody.scrollTop = 0;
+}
+
+function renderStep(step, pass, showLanding) {
+  var stepNum = state.stepIdx + 1;
+  var totalInPass = pass.steps.length;
+
+  var html = '';
+
+  if (showLanding) {
+    var l = pass.landing;
+    html += '<div class="landing">';
+    html +=   '<div class="landing-emoji">' + l.emoji + '</div>';
+    html +=   '<div class="landing-title">' + l.title_he + '</div>';
+    html +=   '<div class="landing-body">' + l.body_he + '</div>';
+    if (l.target_he) {
+      html += '<div class="landing-target">' + l.target_he + '</div>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div class="step-header">';
+  html +=   '<div class="step-counter">צעד ' + stepNum + ' מתוך ' + totalInPass + '</div>';
+  if (step.tag) {
+    html += '<div class="step-tag">' + step.tag + '</div>';
+  }
+  html += '</div>';
+
+  html += '<div class="step-action">' + step.action_he + '</div>';
+
+  if (step.detail_he) {
+    html += '<div class="step-detail">' + step.detail_he + '</div>';
+  }
+  if (step.detail_en) {
+    html += '<div class="en">' + step.detail_en + '</div>';
+  }
+
+  if (step.substeps_he && step.substeps_he.length) {
+    html += substeps(step.substeps_he);
+  }
+
+  if (step.verify_title_he && step.verify_body_he) {
+    html += '<div class="verify">';
+    html +=   '<div class="verify-title">✓ ' + step.verify_title_he + '</div>';
+    html +=   '<div class="verify-body">' + step.verify_body_he + '</div>';
+    html += '</div>';
+  }
+
+  if (step.tip_he) html += '<div class="tip">' + step.tip_he + '</div>';
+  if (step.warn_he) html += '<div class="warn">' + step.warn_he + '</div>';
+  if (step.danger_he) html += '<div class="danger">' + step.danger_he + '</div>';
+
+  return html;
+}
+
+function renderComplete() {
+  var minutes = Math.floor((Date.now() - state.sessionStartedAt) / 60000);
+  var pauseMin = Math.floor(state.pauseTotalSeconds / 60);
+  var workMin = Math.max(0, minutes - pauseMin);
+
+  els.passTitle.textContent = '🎉 הסתיים בהצלחה';
+  els.passCounter.textContent = 'כל המעברים הושלמו';
+  els.progressBar.style.width = '100%';
+
+  renderColumnReference();
+
+  els.stepBody.innerHTML = '' +
+    '<div class="complete-screen">' +
+      '<div class="complete-icon">🏆</div>' +
+      '<div class="complete-title">סיימנו את האקסל!</div>' +
+      '<div class="complete-message">' +
+        'עבודה זמן: <strong>' + workMin + ' דקות</strong>' +
+        (pauseMin > 0 ? '<br>הפסקות: <strong>' + pauseMin + ' דקות</strong>' : '') +
+        '<br><br>הצעד הבא: סגור את אקסל ועבור ל-PowerShell להרצת ה-dry-run.' +
+        '<br><br><em>זה היה החלק הקשה. ההעלאה היא 10 דקות של פעולה אוטומטית.</em>' +
+      '</div>' +
+    '</div>';
+
+  els.btnBack.disabled = false;
+  els.btnNext.disabled = true;
+  els.btnNext.textContent = '✓ הסתיים';
+
+  renderJumpDots();
+}
+
+function renderJumpDots() {
+  var w = currentWorkflow();
+  var html = '';
+  var labels = ['בדיקה ראשונית', 'שמות לקוחות', 'תיוג', 'כיוון', 'אופציונלי', 'בדיקה אחרונה'];
+  for (var i = 0; i < w.passes.length; i++) {
+    var cls = 'jump-dot';
+    if (i < state.passIdx) cls += ' is-done';
+    if (i === state.passIdx && !state.completed) cls += ' is-current';
+    if (state.completed) cls += ' is-done';
+    var label = String(i);
+    var tooltip = 'מעבר ' + i + (labels[i] ? ' — ' + labels[i] : '');
+    html += '<button class="' + cls + '" data-pass="' + i + '" title="' + tooltip + '">' + label + '</button>';
+  }
+  els.passJump.innerHTML = html;
+
+  Array.from(els.passJump.querySelectorAll('.jump-dot')).forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var pIdx = parseInt(btn.getAttribute('data-pass'), 10);
+      jumpToPass(pIdx);
+    });
+  });
+}
+
+function wireLiterals() {
+  Array.from(els.stepBody.querySelectorAll('.literal')).forEach(function (el) {
+    el.addEventListener('click', function () {
+      var text = el.textContent;
+      try {
+        navigator.clipboard.writeText(text).then(function () {
+          el.classList.add('copied');
+          var prev = el.textContent;
+          el.textContent = '✓ הועתק';
+          setTimeout(function () {
+            el.classList.remove('copied');
+            el.textContent = prev;
+          }, 1200);
+        });
+      } catch (e) {
+        var range = document.createRange();
+        range.selectNode(el);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    });
+  });
+}
+
+function next() {
+  if (state.completed) return;
+  var pass = currentPass();
+  if (state.stepIdx < pass.steps.length - 1) {
+    state.stepIdx++;
+  } else {
+    var w = currentWorkflow();
+    if (state.passIdx < w.passes.length - 1) {
+      state.passIdx++;
+      state.stepIdx = 0;
+    } else {
+      state.completed = true;
+    }
+  }
+  render();
+}
+
+function back() {
+  if (state.completed) {
+    state.completed = false;
+    render();
+    return;
+  }
+  if (state.stepIdx > 0) {
+    state.stepIdx--;
+  } else if (state.passIdx > 0) {
+    state.passIdx--;
+    var prevPass = currentWorkflow().passes[state.passIdx];
+    state.stepIdx = prevPass.steps.length - 1;
+  }
+  render();
+}
+
+function jumpToPass(passIdx) {
+  state.passIdx = passIdx;
+  state.stepIdx = 0;
+  state.completed = false;
+  state.landingShown[passIdx] = false;
+  render();
+}
+
+function resetAll() {
+  if (!confirm('להתחיל מההתחלה? כל ההתקדמות תאבד.')) return;
+  state = defaultState();
+  saveState(state);
+  render();
+}
+
+var pauseTimerInterval = null;
+
+function togglePause() {
+  if (state.isPaused) resumeFromPause();
+  else enterPause();
+}
+
+function enterPause() {
+  state.isPaused = true;
+  state.pauseStartedAt = Date.now();
+  saveState(state);
+  els.pauseBadge.classList.add('is-paused');
+  els.btnPause.classList.add('is-paused');
+  els.btnPause.textContent = '▶ ממשיכים';
+  els.pauseOverlay.classList.add('is-visible');
+  startPauseTimer();
+}
+
+function resumeFromPause() {
+  if (state.pauseStartedAt) {
+    var elapsedSec = Math.floor((Date.now() - state.pauseStartedAt) / 1000);
+    state.pauseTotalSeconds += elapsedSec;
+  }
+  state.isPaused = false;
+  state.pauseStartedAt = null;
+  saveState(state);
+  els.pauseBadge.classList.remove('is-paused');
+  els.btnPause.classList.remove('is-paused');
+  els.btnPause.textContent = '⏸ הפסק';
+  els.pauseOverlay.classList.remove('is-visible');
+  stopPauseTimer();
+}
+
+function startPauseTimer() {
+  stopPauseTimer();
+  updatePauseTimerDisplay();
+  pauseTimerInterval = setInterval(updatePauseTimerDisplay, 1000);
+}
+
+function stopPauseTimer() {
+  if (pauseTimerInterval) {
+    clearInterval(pauseTimerInterval);
+    pauseTimerInterval = null;
+  }
+}
+
+function updatePauseTimerDisplay() {
+  if (!state.pauseStartedAt) return;
+  var sec = Math.floor((Date.now() - state.pauseStartedAt) / 1000);
+  var m = Math.floor(sec / 60);
+  var s = sec % 60;
+  var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+  els.pauseTimer.textContent = pad(m) + ':' + pad(s);
+}
+
+if (state.isPaused && state.pauseStartedAt) {
+  els.pauseBadge.classList.add('is-paused');
+  els.btnPause.classList.add('is-paused');
+  els.btnPause.textContent = '▶ ממשיכים';
+  els.pauseOverlay.classList.add('is-visible');
+  startPauseTimer();
+}
+
+els.btnNext.addEventListener('click', next);
+els.btnBack.addEventListener('click', back);
+els.btnPause.addEventListener('click', togglePause);
+els.btnResume.addEventListener('click', resumeFromPause);
+els.btnReset.addEventListener('click', resetAll);
+
+document.addEventListener('keydown', function (e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    if (!state.isPaused && !els.btnNext.disabled) next();
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    if (!state.isPaused && !els.btnBack.disabled) back();
+  } else if (e.key === 'p' || e.key === 'P') {
+    e.preventDefault();
+    togglePause();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
