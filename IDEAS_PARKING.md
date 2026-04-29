@@ -517,6 +517,34 @@ Our `deleteOrphanStorageObject()` function in uploadForm.js already uses the API
      "Type `python migrate_to_gadiw.py --sheet gadi` then press TAB — PowerShell auto-completes full filename"
    - Add as new step before final celebration card
    - Also explain the timestamp meaning (DDMMYYYY = day-month-year, HHMMSS = hour-min-sec) for context
+   IDEAS_PARKING.md additions (28/04/2026 evening):
+
+### Phase 1.5 (immediately after Gadi USA trip — May 23+)
+- **Gadi's own Supabase account** — transfer ownership of pslwvkymccbngtyvgagj
+  - Right architecture long-term
+  - Privacy: Gadi owns his data
+  - NDA-friendly
+  - Migration plan: snapshot DB → restore to new Gadi-owned project → swap connection strings
+  - Estimated work: 3-4 hours
+  - Trigger: AFTER Gadi's USA trip succeeds (proven the system works)
+
+### Phase 4 (parked from yesterday + today)
+- **ElevenLabs voice assistant account** — Hebrew TTS for Gadi tutor mode
+  - Already parked yesterday
+  - DO NOT subscribe before Gadi explicitly asks for voice features
+  - Trigger: 6+ months after Phase 1, only if Gadi requests
+
+### Phase 5+ (very far future)
+- **Cloudinary for video files** — IF Gadi ever needs to upload videos/audio
+  - Currently NOT in scope (Phase 1 = documents only)
+  - Trigger: Gadi explicitly asks for video upload feature
+  - Could also be done with Supabase Storage extending to larger files
+
+### NEVER (decisively rejected)
+- **Git account for Gadi** — Gadi is a lawyer, not a developer
+  - Code repo stays in avshi2-maker (Avshi's GitHub)
+  - Documentation handoff covers continuity
+  - Adding Gadi to GitHub adds zero value, adds confusion risk
 
 [More to add as we discover them...]
 
@@ -538,6 +566,13 @@ Our `deleteOrphanStorageObject()` function in uploadForm.js already uses the API
   - Reason: Phase 1 is Gadi-only proof of concept
   - Revisit: After Gadi has used it for 3+ months happily
   - Plan: hire Israeli tech lawyer (~5-15k ILS) for proper DPA + privacy policy
+  The dry-run found 6 existing clients in Supabase, including:
+
+חברת בנייה אבני דרך בע"מ (test data?)
+לקוח בדיקה (literally "Test Client")
+(+1 more we can't see)
+
+These are leftover test rows from earlier development. They will not interfere with this migration — the script will match by exact name and reuse יעקב כהן / מירה גולדברג / דוד ישראלי. Park this in IDEAS_PARKING.md as "cleanup test clients before Gadi sees DB" — handle it after the real upload, not now.
 
 ---
 
