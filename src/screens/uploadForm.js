@@ -53,12 +53,12 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
         <div>
           <label style="display: block; font-weight: 500; margin-bottom: 6px;">קבצים <span style="color: #c00;">*</span></label>
           <div id="drop-zone"
-            style="border: 2px dashed #1F3A5F; border-radius: 8px; padding: 32px 16px; text-align: center; background: #f7f8fa; cursor: pointer; transition: background 0.15s, border-color 0.15s;">
+            style="border: 2px dashed #1E2D5C; border-radius: 8px; padding: 32px 16px; text-align: center; background: #f7f8fa; cursor: pointer; transition: background 0.15s, border-color 0.15s;">
             <div style="font-size: 36px; margin-bottom: 8px;">📁</div>
             <div style="font-size: 15px; color: #333; margin-bottom: 4px;">גרור קבצים לכאן</div>
             <div style="font-size: 13px; color: #888; margin-bottom: 12px;">או</div>
             <button type="button" id="pick-files-btn"
-              style="padding: 8px 20px; background: #1F3A5F; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
+              style="padding: 8px 20px; background: #1E2D5C; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
               בחר קבצים מהמחשב
             </button>
             <input type="file" id="file-input" multiple style="display: none;" />
@@ -107,7 +107,7 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
 
         <div style="display: flex; gap: 8px; justify-content: flex-start; margin-top: 8px;">
           <button type="submit" id="submit-btn"
-            style="padding: 10px 24px; background: #1F3A5F; color: #fff; border: none; border-radius: 4px; font-size: 15px; font-weight: 500; cursor: pointer;">
+            style="padding: 10px 24px; background: #1E2D5C; color: #fff; border: none; border-radius: 4px; font-size: 15px; font-weight: 500; cursor: pointer;">
             העלה מסמך
           </button>
         </div>
@@ -148,12 +148,12 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
   dropZone.addEventListener('dragleave', function (e) {
     e.preventDefault();
     dropZone.style.background = '#f7f8fa';
-    dropZone.style.borderColor = '#1F3A5F';
+    dropZone.style.borderColor = '#1E2D5C';
   });
   dropZone.addEventListener('drop', function (e) {
     e.preventDefault();
     dropZone.style.background = '#f7f8fa';
-    dropZone.style.borderColor = '#1F3A5F';
+    dropZone.style.borderColor = '#1E2D5C';
     var files = Array.from(e.dataTransfer.files || []);
     handleFiles(files);
   });
@@ -305,7 +305,7 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
     fileTableContainer.style.display = 'block';
     fileTableContainer.innerHTML = `
       <div style="margin-bottom: 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;">
-        <div style="background: #1F3A5F; color: #fff; padding: 10px 14px; font-weight: 500; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background: #1E2D5C; color: #fff; padding: 10px 14px; font-weight: 500; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
           <span>📂 קבצים שנבחרו (${selectedFiles.length})</span>
           <button type="button" id="clear-all-files-btn"
             style="background: transparent; border: 1px solid #fff; color: #fff; padding: 4px 10px; border-radius: 3px; font-size: 12px; cursor: pointer; font-family: inherit;">
@@ -316,18 +316,18 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
       </div>
 
       <div class="up-bulk-apply" style="background: #eef4ff; border: 1px solid #c5d6f0; border-radius: 6px; padding: 12px; margin-bottom: 12px; display: flex; gap: 8px; align-items: center;">
-        <span style="font-size: 13px; color: #1F3A5F; white-space: nowrap;">💡 החל תיוג על כל הקבצים:</span>
+        <span style="font-size: 13px; color: #1E2D5C; white-space: nowrap;">💡 החל תיוג על כל הקבצים:</span>
         <input type="text" id="bulk-tag-input" placeholder="לדוגמה: חוזה"
           style="flex: 1; padding: 6px 8px; border: 1px solid #ccc; border-radius: 3px; font-family: inherit; direction: rtl; font-size: 13px;" />
         <button type="button" id="apply-tag-all-btn"
-          style="padding: 6px 14px; background: #1F3A5F; color: #fff; border: none; border-radius: 3px; font-size: 13px; cursor: pointer; white-space: nowrap;">
+          style="padding: 6px 14px; background: #1E2D5C; color: #fff; border: none; border-radius: 3px; font-size: 13px; cursor: pointer; white-space: nowrap;">
           החל על הכל
         </button>
       </div>
 
       <div class="up-add-more" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 8px 12px; background: #fafbfc; border-radius: 4px; border: 1px dashed #ddd;">
         <button type="button" id="add-more-files-btn"
-          style="padding: 6px 14px; background: #fff; color: #1F3A5F; border: 1px solid #1F3A5F; border-radius: 3px; font-size: 13px; cursor: pointer;">
+          style="padding: 6px 14px; background: #fff; color: #1E2D5C; border: 1px solid #1E2D5C; border-radius: 3px; font-size: 13px; cursor: pointer;">
           + הוסף קבצים נוספים
         </button>
         <span id="total-size-label" style="color: #666; font-size: 13px;"></span>
@@ -412,7 +412,7 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
     progressPanel.style.display = 'block';
     progressPanel.innerHTML = `
       <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;">
-        <div style="background: #1F3A5F; color: #fff; padding: 12px 16px;">
+        <div style="background: #1E2D5C; color: #fff; padding: 12px 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div style="font-weight: 500; font-size: 15px;">📤 מעלה ${doneCount} מתוך ${totalCount}</div>
             <div style="font-size: 13px;">
@@ -684,12 +684,12 @@ export async function renderUploadForm(container, session, onCancel, onSuccess) 
       }, 1800);
     } else if (successCount === 0) {
       submitBtn.textContent = 'נסה שוב';
-      submitBtn.style.background = '#1F3A5F';
+      submitBtn.style.background = '#1E2D5C';
       restoreFormForRetry();
       resetButton(submitBtn);
     } else {
       submitBtn.textContent = 'נסה שוב את ' + failureCount + ' שנכשלו';
-      submitBtn.style.background = '#1F3A5F';
+      submitBtn.style.background = '#1E2D5C';
       selectedFiles = selectedFiles.filter(function (entry) { return entry.status === 'failed'; });
       selectedFiles.forEach(function (e) {
         e.status = 'pending';

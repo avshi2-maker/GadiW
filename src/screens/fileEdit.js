@@ -123,7 +123,7 @@ export async function renderFileEdit(container, session, docId, onCancel, onSave
 
   // ===== Render the edit form =====
   editContent.innerHTML = `
-    <div style="background: #1F3A5F; color: #fff; padding: 16px 20px; border-radius: 6px; margin-bottom: 20px;">
+    <div style="background: #1E2D5C; color: #fff; padding: 16px 20px; border-radius: 6px; margin-bottom: 20px;">
       <div style="font-size: 12px; opacity: 0.8; margin-bottom: 4px;">קובץ (לא ניתן לעריכה)</div>
       <div style="font-weight: 500; font-size: 16px; word-break: break-word;">${escapeHtml(doc.file_name)}</div>
       <div style="color: #c5d2e3; font-size: 12px; margin-top: 4px;">${escapeHtml(doc.mime_type || 'unknown')} · ${fmtKB(doc.file_size)}</div>
@@ -172,7 +172,7 @@ export async function renderFileEdit(container, session, docId, onCancel, onSave
 
       <div style="display: flex; gap: 8px; justify-content: flex-start; margin-top: 8px;">
         <button type="submit" id="save-btn"
-          style="padding: 10px 24px; background: #1F3A5F; color: #fff; border: none; border-radius: 4px; font-size: 15px; font-weight: 500; cursor: pointer;">
+          style="padding: 10px 24px; background: #1E2D5C; color: #fff; border: none; border-radius: 4px; font-size: 15px; font-weight: 500; cursor: pointer;">
           💾 שמור שינויים
         </button>
         <button type="button" id="cancel-btn-2"
@@ -281,7 +281,7 @@ export async function renderFileEdit(container, session, docId, onCancel, onSave
           <div style="font-size: 22px; font-weight: 500; color: #1b5e20; margin-bottom: 8px;">המסמך נשמר בהצלחה</div>
           <div style="font-size: 14px; color: #2e7d32; margin-bottom: 24px;">עודכן: ${timestampHebrew}</div>
           <button type="button" id="back-to-detail-btn"
-            style="padding: 10px 24px; background: #1F3A5F; color: #fff; border: none; border-radius: 4px; font-size: 15px; cursor: pointer;">
+            style="padding: 10px 24px; background: #1E2D5C; color: #fff; border: none; border-radius: 4px; font-size: 15px; cursor: pointer;">
             חזרה למסמך
           </button>
           <div style="font-size: 12px; color: #66bb6a; margin-top: 12px;">חוזר אוטומטית בעוד 4 שניות...</div>

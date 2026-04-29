@@ -114,7 +114,7 @@ export async function renderFileDetail(container, session, docId, onBack) {
   // ===== Render the detail card =====
   detailContent.innerHTML = `
     <!-- File name header -->
-    <div style="background: #1F3A5F; color: #fff; padding: 20px 24px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+    <div style="background: #1E2D5C; color: #fff; padding: 20px 24px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 16px;">
       <div style="min-width: 0; flex: 1;">
         <div style="font-size: 22px; font-weight: 500; word-break: break-word;">${escapeHtml(doc.file_name)}</div>
         <div style="color: #c5d2e3; font-size: 13px; margin-top: 4px;">${escapeHtml(doc.mime_type || 'unknown type')} · ${fmtSize(doc.file_size)}</div>
@@ -124,15 +124,15 @@ export async function renderFileDetail(container, session, docId, onBack) {
     <!-- Action buttons -->
     <div style="background: #f7f8fa; padding: 16px 24px; border-bottom: 1px solid #e5e7eb; display: flex; gap: 8px; flex-wrap: wrap;">
       <button id="download-btn"
-        style="padding: 10px 20px; background: #1F3A5F; color: #fff; border: none; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer;">
+        style="padding: 10px 20px; background: #1E2D5C; color: #fff; border: none; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer;">
         ⬇ הורדה
       </button>
       <button id="edit-btn"
-        style="padding: 10px 20px; background: #fff; color: #1F3A5F; border: 1px solid #1F3A5F; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer;">
+        style="padding: 10px 20px; background: #fff; color: #1E2D5C; border: 1px solid #1E2D5C; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer;">
         ✏️ ערוך
       </button>
       <button id="preview-btn"
-        style="padding: 10px 20px; background: #fff; color: #1F3A5F; border: 1px solid #1F3A5F; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer;">
+        style="padding: 10px 20px; background: #fff; color: #1E2D5C; border: 1px solid #1E2D5C; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer;">
         👁 תצוגה מקדימה
       </button>
     </div>

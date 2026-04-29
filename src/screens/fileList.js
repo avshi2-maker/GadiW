@@ -1,4 +1,4 @@
-﻿// src/screens/fileList.js
+// src/screens/fileList.js
 // File list screen — fetches documents owned by the current user from Supabase
 // and renders them as a filterable list. Hebrew RTL.
 // Created: 23/04/2026 (Lesson 6)
@@ -28,7 +28,7 @@ export async function renderFileList(container, session) {
         </div>
         <div class="fl-header-buttons" style="display: flex; gap: 8px;">
           <button id="upload-btn"
-            style="padding: 8px 16px; background: #1F3A5F; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; font-weight: 500;">
+            style="padding: 8px 16px; background: #1E2D5C; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; font-weight: 500;">
             ➕ העלאת מסמך
           </button>
           <button id="logout-btn"
@@ -221,7 +221,7 @@ export async function renderFileList(container, session) {
       return `
         <div class="doc-row" data-doc-id="${doc.id}"
           style="padding: 14px 16px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 8px; background: #fff; display: grid; grid-template-columns: 1fr auto auto auto; gap: 16px; align-items: center; cursor: pointer; transition: background 0.15s, border-color 0.15s;"
-          onmouseover="this.style.background='#f9fafe'; this.style.borderColor='#1F3A5F';"
+          onmouseover="this.style.background='#f9fafe'; this.style.borderColor='#1E2D5C';"
           onmouseout="this.style.background='#fff'; this.style.borderColor='#eee';">
           <div>
             <div style="font-weight: 500; font-size: 16px;">${escapeHtml(doc.file_name)}</div>
