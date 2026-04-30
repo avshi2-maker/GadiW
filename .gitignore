@@ -76,3 +76,5 @@ migration/test_files/
 
 # Handover docs (kept locally, not in git)
 GadiW_Migration_Day_Bible_*.docx
+
+backups/
