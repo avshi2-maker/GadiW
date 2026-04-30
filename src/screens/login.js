@@ -4,14 +4,21 @@
 // Updated: 26/04/2026 — Lesson 9B Phase B: data-screen marker for mobile CSS
 // Updated: 29/04/2026 — Lesson 10B: branded for Gadi Wisfeld Law Office
 // Updated: 30/04/2026 — Session 2: replaced password with email OTP (signInWithOtp + verifyOtp)
+// Updated: 30/04/2026 — Session 4: live MM:SS countdown when rate-limit hit
+// Updated: 30/04/2026 — Session 4b: smart 2-tier countdown (60sec for rapid-click, 60min for hourly-cap)
 
 import { supabase } from '../lib/supabase.js';
 
 var BRAND_NAVY = '#1E2D5C';
 
-// Module-level state — survives across renders within one login attempt
 var currentEmail = '';
 var hostContainer = null;
+var countdownTimer = null;
+
+// Tier durations (seconds)
+var TIER_SHORT = 60;       // 60 seconds — rapid-click protection
+var TIER_LONG = 60 * 60;   // 60 minutes — hourly-cap protection
+var ESCALATION_WINDOW_MS = 5 * 60 * 1000;  // 5 min: if 429 happens twice within this window, it's the hourly cap
 
 // =============================================================================
 // PUBLIC ENTRY POINT
@@ -19,6 +26,7 @@ var hostContainer = null;
 export function renderLogin(container) {
   hostContainer = container;
   currentEmail = '';
+  if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
   renderEmailEntry();
 }
 
@@ -122,7 +130,6 @@ function renderCodeEntry() {
   var backBtn = hostContainer.querySelector('#back-btn');
   var resendBtn = hostContainer.querySelector('#resend-btn');
 
-  // Auto-focus the code field
   codeInput.focus();
 
   form.addEventListener('submit', async function (e) {
@@ -136,6 +143,7 @@ function renderCodeEntry() {
   });
 
   backBtn.addEventListener('click', function () {
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
     renderEmailEntry();
   });
 
@@ -173,15 +181,22 @@ async function handleSendCode(email, submitBtn) {
   });
 
   if (result.error) {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'שלח לי קוד';
-    showMessage(translateError(result.error.message), '#c00');
+    var translated = translateError(result.error.message);
+    if (translated === '__RATE_LIMIT__') {
+      var tier = recordRateLimitHit(email);
+      var seconds = (tier === 'long') ? TIER_LONG : TIER_SHORT;
+      var prefix = (tier === 'long') ? 'המכסה השעתית מוצתה. נסה שוב בעוד ' : 'נסה שוב בעוד ';
+      startCountdown(seconds, submitBtn, 'שלח לי קוד', prefix);
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'שלח לי קוד';
+      showMessage(translated, '#c00');
+    }
     return;
   }
 
   currentEmail = email;
   renderCodeEntry();
-  // After re-render, show a confirmation message in the new screen
   showMessage('הקוד נשלח! בדוק את המייל שלך', '#080');
 }
 
@@ -203,8 +218,9 @@ async function handleVerifyCode(code, submitBtn) {
     return;
   }
 
+  // Success — clear rate-limit history for this email
+  clearRateLimitHistory(currentEmail);
   showMessage('התחברת בהצלחה!', '#080');
-  // The app's main.js auth listener will detect the session and redirect to the main screen
 }
 
 async function handleResendCode(resendBtn) {
@@ -218,15 +234,71 @@ async function handleResendCode(resendBtn) {
     },
   });
 
-  resendBtn.disabled = false;
-  resendBtn.textContent = 'שלח קוד חדש';
-
   if (result.error) {
-    showMessage(translateError(result.error.message), '#c00');
+    var translated = translateError(result.error.message);
+    if (translated === '__RATE_LIMIT__') {
+      var tier = recordRateLimitHit(currentEmail);
+      var seconds = (tier === 'long') ? TIER_LONG : TIER_SHORT;
+      var prefix = (tier === 'long') ? 'המכסה השעתית מוצתה. נסה שוב בעוד ' : 'נסה שוב בעוד ';
+      startCountdown(seconds, resendBtn, 'שלח קוד חדש', prefix);
+    } else {
+      resendBtn.disabled = false;
+      resendBtn.textContent = 'שלח קוד חדש';
+      showMessage(translated, '#c00');
+    }
     return;
   }
 
+  resendBtn.disabled = false;
+  resendBtn.textContent = 'שלח קוד חדש';
   showMessage('קוד חדש נשלח למייל', '#080');
+}
+
+// =============================================================================
+// RATE-LIMIT TIER DETECTION (uses localStorage)
+// =============================================================================
+function getRateLimitKey(email) {
+  return 'gadiw_rate_limits_' + email;
+}
+
+function recordRateLimitHit(email) {
+  var key = getRateLimitKey(email);
+  var now = Date.now();
+  var history = [];
+
+  try {
+    var raw = localStorage.getItem(key);
+    if (raw) history = JSON.parse(raw);
+  } catch (e) {
+    history = [];
+  }
+
+  // Filter to keep only recent (within escalation window)
+  history = history.filter(function (ts) { return (now - ts) < ESCALATION_WINDOW_MS; });
+
+  // Decide tier BEFORE adding the new hit:
+  //   - empty history → 'short' (first hit)
+  //   - 1+ recent hits → 'long' (this is the second-or-later hit within window)
+  var tier = (history.length === 0) ? 'short' : 'long';
+
+  // Add this hit
+  history.push(now);
+
+  try {
+    localStorage.setItem(key, JSON.stringify(history));
+  } catch (e) {
+    // localStorage might be disabled — fall through silently
+  }
+
+  return tier;
+}
+
+function clearRateLimitHistory(email) {
+  try {
+    localStorage.removeItem(getRateLimitKey(email));
+  } catch (e) {
+    // ignore
+  }
 }
 
 // =============================================================================
@@ -237,7 +309,7 @@ function translateError(errorMessage) {
   var msg = String(errorMessage).toLowerCase();
 
   if (msg.indexOf('rate limit') !== -1 || msg.indexOf('429') !== -1) {
-    return 'נשלחו יותר מדי בקשות. אנא המתן דקה ונסה שוב.';
+    return '__RATE_LIMIT__';
   }
   if (msg.indexOf('invalid') !== -1 && msg.indexOf('credentials') !== -1) {
     return 'פרטי הזיהוי שגויים';
@@ -255,9 +327,41 @@ function translateError(errorMessage) {
     return 'כתובת מייל לא תקינה';
   }
 
-  // Fallback — return the original message so we still see what went wrong
   return errorMessage;
-}// =============================================================================
+}
+
+// =============================================================================
+// COUNTDOWN — disable button and show live MM:SS countdown
+// =============================================================================
+function startCountdown(seconds, button, originalLabel, messagePrefix) {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+
+  var remaining = seconds;
+  button.disabled = true;
+
+  function tick() {
+    if (remaining <= 0) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+      button.disabled = false;
+      button.textContent = originalLabel;
+      showMessage('', '');
+      return;
+    }
+    var mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+    var ss = String(remaining % 60).padStart(2, '0');
+    showMessage(messagePrefix + mm + ':' + ss, '#c00');
+    remaining = remaining - 1;
+  }
+
+  tick();
+  countdownTimer = setInterval(tick, 1000);
+}
+
+// =============================================================================
 // HELPER — Show status message
 // =============================================================================
 function showMessage(text, color) {
